@@ -1,0 +1,2038 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- Fuentes Google Fonts -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Space+Grotesk:wght@400;600;700&family=Exo+2:wght@400;600;700&display=swap" rel="stylesheet">
+    <title>Interactive Planetarium & Solar System</title>
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+            
+            background: #000;
+            font-family: 'Space Grotesk', sans-serif;
+        }
+        #canvas {
+            display: block;
+            width: 100vw;
+            height: 100vh;
+        }
+       #info {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    color: white;
+    background: linear-gradient(145deg, rgba(15, 20, 45, 0.92) 0%, rgba(25, 15, 50, 0.92) 100%);
+    padding: 0;
+    border-radius: 20px;
+    max-width: 380px;
+    pointer-events: none;
+    box-shadow: 
+        0 20px 60px rgba(0, 0, 0, 0.7),
+        0 0 80px rgba(68, 136, 255, 0.15),
+        inset 0 1px 0 rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(20px);
+    border: 2px solid;
+    border-image: linear-gradient(135deg, rgba(68, 136, 255, 0.5), rgba(136, 204, 255, 0.3), rgba(68, 136, 255, 0.5)) 1;
+    overflow: hidden;
+    
+}
+
+#info::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, #4488ff, #88ccff, #4488ff);
+    animation: shimmer 3s ease-in-out infinite;
+}
+
+@keyframes shimmer {
+    0%, 100% { opacity: 0.5; }
+    50% { opacity: 1; }
+}
+
+#info .info-header {
+    background: linear-gradient(135deg, rgba(68, 136, 255, 0.2) 0%, rgba(136, 204, 255, 0.1) 100%);
+    padding: 20px 24px;
+    border-bottom: 1px solid rgba(68, 136, 255, 0.3);
+}
+
+#info h3 {
+    margin: 0;
+    font-size: 24px;
+    font-weight: 800;
+    background: linear-gradient(135deg, #ffffff 0%, #88ccff 50%, #4488ff 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-family: 'Orbitron', sans-serif; /* Fuente futurista para títulos */
+}
+
+#info h3::before {
+    content: '✨';
+    font-size: 28px;
+    filter: drop-shadow(0 0 10px rgba(68, 136, 255, 0.8));
+}
+
+#info .info-content {
+    padding: 20px 24px;
+}
+
+#info p {
+    margin: 0 0 12px 0;
+    font-size: 14px;
+    color: rgba(255, 255, 255, 0.9);
+    line-height: 1.7;
+    font-weight: 400;
+}
+
+#info .instruction {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px;
+    background: rgba(68, 136, 255, 0.08);
+    border-radius: 10px;
+    border-left: 3px solid #4488ff;
+    font-size: 13px;
+    color: rgba(255, 255, 255, 0.85);
+    margin-top: 8px;
+}
+
+#info .instruction::before {
+    content: '👆';
+    font-size: 20px;
+    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
+}
+
+#info .star-info {
+    margin-top: 16px;
+    padding: 14px;
+    background: linear-gradient(135deg, rgba(68, 136, 255, 0.15) 0%, rgba(136, 204, 255, 0.1) 100%);
+    border-radius: 12px;
+    border: 1px solid rgba(68, 136, 255, 0.3);
+    box-shadow: 0 4px 15px rgba(68, 136, 255, 0.2);
+}
+#controls {
+    position: absolute;
+    bottom: 20px;
+    left: 22px;
+    color: white;
+    background: linear-gradient(135deg, rgba(30, 30, 50, 0.95) 0%, rgba(20, 20, 40, 0.95) 100%);
+    padding: 16px;
+    border-radius: 12px;
+    font-size: 11px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6), 0 0 1px rgba(255, 255, 255, 0.1) inset;
+    backdrop-filter: blur(15px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    max-width: 350px;
+    #controls {
+    /* ... propiedades existentes ... */
+    font-family: 'Space Grotesk', sans-serif;
+}
+}
+
+#controls .control-section {
+    margin-bottom: 18px;
+}
+
+#controls .control-section:last-child {
+    margin-bottom: 0;
+}
+
+#controls .section-title {
+    color: #88ccff;
+    font-size: 15px;
+    font-weight: 700;
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+#controls .section-title::before {
+    content: '';
+    width: 4px;
+    height: 16px;
+    background: linear-gradient(180deg, #4488ff 0%, #88ccff 100%);
+    border-radius: 2px;
+}
+
+#controls .star-counter {
+    background: rgba(68, 136, 255, 0.15);
+    padding: 8px 14px;
+    border-radius: 8px;
+    display: inline-block;
+    border: 1px solid rgba(68, 136, 255, 0.3);
+    font-weight: 600;
+    color: #88ccff;
+}
+
+#controls .input-group {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    margin-top: 10px;
+}
+
+#controls .input-label {
+    color: rgba(255, 255, 255, 0.8);
+    font-size: 12px;
+    min-width: 35px;
+    font-weight: 500;
+}
+
+#controls input[type="number"],
+#controls input[type="text"] {
+    background: rgba(255, 255, 255, 0.08);
+    border: 1.5px solid rgba(255, 255, 255, 0.2);
+    color: white;
+    padding: 10px 14px;
+    border-radius: 8px;
+    font-size: 13px;
+    transition: all 0.3s ease;
+    flex: 1;
+}
+
+#controls input[type="number"]:focus,
+#controls input[type="text"]:focus {
+    outline: none;
+    border-color: #4488ff;
+    background: rgba(68, 136, 255, 0.15);
+    box-shadow: 0 0 0 3px rgba(68, 136, 255, 0.2);
+}
+
+#controls input[type="number"]::placeholder,
+#controls input[type="text"]::placeholder {
+    color: rgba(255, 255, 255, 0.4);
+}
+
+#controls button {
+    background: linear-gradient(135deg, #4488ff 0%, #3366cc 100%);
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 12px rgba(68, 136, 255, 0.4);
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    margin-top: 12px; 
+}
+
+#controls button:hover {
+    background: linear-gradient(135deg, #5599ff 0%, #4477dd 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(68, 136, 255, 0.6);
+}
+
+#controls button:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 8px rgba(68, 136, 255, 0.5);
+}
+
+#controls .divider {
+    height: 1px;
+    background: linear-gradient(90deg, transparent 0%, rgba(255, 255, 255, 0.2) 50%, transparent 100%);
+    margin: 18px 0;
+}
+
+#controls .info-text {
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 12px;
+    line-height: 1.6;
+    margin-bottom: 8px;
+}
+        .star-info {
+            margin-top: 10px;
+            padding: 10px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 5px;
+        }
+
+        #starLabel {
+            position: absolute;
+            pointer-events: none; /* Cambiado a none */
+            background: rgba(30,30,30,0.95);
+            color: #ffe;
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-size: 13px;
+            border: 1px solid #888;
+            display: none;
+            z-index: 10;
+            max-width: 260px;
+        }
+        #starLabel button {
+            pointer-events: auto;
+        }
+
+        /* Estilos para el botón Home */
+        #homeBtn {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            z-index: 40;
+            padding: 10px 22px;
+            font-size: 16px;
+            background: #4488ff;
+            color: #fff;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            box-shadow: 0 2px 8px #0006;
+        }
+
+        /* Estilos para el chatbox Gemini */
+        #chatbox {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 320px;
+            background: #222;
+            color: #fff;
+            border-radius: 10px;
+            box-shadow: 0 2px 8px #0008;
+            z-index: 1000;
+        }
+        #chatbox .header {
+            padding: 10px;
+            border-bottom: 1px solid #444;
+            font-weight: bold;
+        }
+        #chatbox .quick-question {
+            margin: 4px 2px;
+            padding: 5px 10px;
+            background: #333;
+            color: #fff;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+        #chatbox #chat-messages {
+            height: 140px;
+            overflow-y: auto;
+            padding: 10px;
+            font-size: 14px;
+        }
+        #chatbox #chat-form {
+            display: flex;
+            border-top: 1px solid #444;
+        }
+        #chatbox #chat-input {
+            flex: 1;
+            padding: 8px;
+            border: none;
+            border-radius: 0 0 0 10px;
+            background: #333;
+            color: #fff;
+        }
+        #chatbox #chat-form button {
+            padding: 8px 16px;
+            border: none;
+            background: #4a90e2;
+            color: #fff;
+            border-radius: 0 0 10px 0;
+            cursor: pointer;
+        }
+        
+        /* Animaciones para el tooltip */
+@keyframes tooltipFloat {
+    0%, 100% {
+        transform: translateY(0px);
+    }
+    50% {
+        transform: translateY(-8px);
+    }
+}
+
+@keyframes tooltipFadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes pulseGlow {
+    0%, 100% {
+        box-shadow: 0 4px 15px rgba(74, 144, 226, 0.4);
+    }
+    50% {
+        box-shadow: 0 4px 25px rgba(74, 144, 226, 0.8);
+    }
+}
+
+#chatToggle {
+    animation: pulseGlow 2s ease-in-out infinite;
+}
+
+#chatToggle:hover {
+    transform: scale(1.1);
+    background: linear-gradient(135deg, #5ba3f5 0%, #4685cc 100%);
+}
+
+#starFullInfo {
+    position: fixed;
+    top: 0;
+    right: -520px; /* Empieza oculto fuera de la pantalla */
+    width: 400px;
+    height: 100vh;
+    background: linear-gradient(145deg, rgba(15, 20, 45, 0.98) 0%, rgba(25, 15, 50, 0.98) 100%);
+    color: white;
+    padding: 24px 28px;
+    box-shadow: 
+        -5px 0 30px rgba(0, 0, 0, 0.8),
+        0 0 80px rgba(68, 136, 255, 0.3),
+        inset 0 1px 0 rgba(255, 255, 255, 0.1);
+    border-left: 2px solid rgba(68, 136, 255, 0.5);
+    z-index: 1000;
+    overflow-y: auto;
+    backdrop-filter: blur(20px);
+    font-family: 'Space Grotesk', sans-serif;
+    transition: right 0.3s ease-in-out; /* Animación de deslizamiento */
+}
+
+#starFullInfo.show {
+    right: 0; /* Cuando tiene la clase 'show', se desliza hacia dentro */
+}
+
+#starFullInfo::-webkit-scrollbar {
+    width: 8px;
+}
+
+#starFullInfo::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 4px;
+}
+
+#starFullInfo::-webkit-scrollbar-thumb {
+    background: rgba(68, 136, 255, 0.5);
+    border-radius: 4px;
+}
+
+#starFullInfo::-webkit-scrollbar-thumb:hover {
+    background: rgba(68, 136, 255, 0.7);
+}
+
+#starFullInfo > div {
+    line-height: 1.8;
+}
+
+#starFullInfo strong {
+    color: #88ccff;
+    font-weight: 600;
+}
+
+/* Botón de cerrar en esquina superior derecha */
+#starFullInfo .close-btn {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    width: 40px;
+    height: 40px;
+    background: rgba(255, 68, 68, 0.2);
+    border: 2px solid #ff4444;
+    border-radius: 50%;
+    color: #ff4444;
+    font-size: 24px;
+    font-weight: bold;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+    z-index: 10;
+}
+
+#starFullInfo .close-btn:hover {
+    background: #ff4444;
+    color: white;
+    transform: rotate(90deg);
+}
+    </style>
+</head>
+<body>
+    <div id="canvas"></div>
+    <div id="info">
+    <div class="info-header">
+        <h3>AstroMaps</h3>
+    </div>
+    <div class="info-content">
+        <p>Explore the solar system and discover the brightest stars in the cosmos in real time.</p>
+        <div class="instruction">
+            Click on any planet, star, or the Sun to view detailed information.
+        </div>
+        <div id="starDetails"></div>
+    </div>
+</div>
+    <div id="controls">
+    <div class="control-section"><div class="section-title">Controls</div>
+<div class="info-text">
+    🖱️ Left click: Rotate<br>
+    🖱️ Right click: Pan<br>
+    🔍 Scroll: Zoom
+</div>
+
+        <div class="star-counter">
+            ⭐ Stars: <span id="starCount">0</span>
+        </div>
+    </div>
+    
+    <div class="divider"></div>
+    
+    <div class="control-section">
+        <div class="section-title">Coordinates</div>
+        <div class="input-group">
+            <span class="input-label">RA:</span>
+            <input type="number" id="searchRA" step="0.01" placeholder="0.00">
+        </div>
+        <div class="input-group">
+            <span class="input-label">Dec:</span>
+            <input type="number" id="searchDec" step="0.01" placeholder="0.00">
+        </div>
+        <button id="searchBtn">🔍 Search</button>
+    </div>
+    
+    <div class="divider"></div>
+    
+    <div class="control-section">
+        <div class="section-title">Search</div>
+        <input type="text" id="searchName" placeholder="Name of star or planet...">
+        <button id="searchNameBtn">🔍 Search</button>
+    </div>
+</div>
+    <div id="starLabel"></div>
+    <div id="starFullInfo"></div>
+    <!-- Agrega el botón Home arriba a la derecha -->
+    <button id="homeBtn" style="
+        position: absolute;
+        top: 20px;
+        right: 20px;
+        z-index: 40;
+        padding: 10px 22px;
+        font-size: 16px;
+        background: #4488ff;
+        color: #fff;
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+        box-shadow: 0 2px 8px #0006;
+    ">Home</button>
+    <!-- Agrega el chatbox Gemini justo antes del cierre de </body> -->
+    <!-- 💬 Gemini Chat ocultable -->
+<button id="chatToggle" style="
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    width: 55px;
+    height: 55px;
+    border-radius: 50%;
+    border: none;
+    background: linear-gradient(135deg, #4a90e2 0%, #357abd 100%);
+    color: #fff;
+    font-size: 26px;
+    cursor: pointer;
+    box-shadow: 0 4px 15px rgba(74, 144, 226, 0.4);
+    z-index: 1100;
+    transition: all 0.3s ease;
+">💬</button>
+
+<!-- Tooltip animado -->
+<div id="chatTooltip" style="
+    position: fixed;
+    bottom: 85px;
+    right: 20px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: #fff;
+    padding: 12px 18px;
+    border-radius: 12px;
+    font-size: 14px;
+    font-weight: 600;
+    box-shadow: 0 4px 20px rgba(102, 126, 234, 0.4);
+    z-index: 1050;
+    white-space: nowrap;
+    animation: tooltipFloat 3s ease-in-out infinite, tooltipFadeIn 0.5s ease-out;
+    pointer-events: none;
+">
+✨ Need more info?<br>
+<span style='font-size: 12px; opacity: 0.9;'>Chat with Gemini here</span>
+    <div style="
+        position: absolute;
+        bottom: -8px;
+        right: 15px;
+        width: 0;
+        height: 0;
+        border-left: 8px solid transparent;
+        border-right: 8px solid transparent;
+        border-top: 8px solid #764ba2;
+    "></div>
+</div>
+
+<div id="chatbox" style="
+    position: fixed;
+    bottom: 80px;
+    right: 20px;
+    width: 320px;
+    background: #222;
+    color: #fff;
+    border-radius: 10px;
+    box-shadow: 0 2px 8px #0008;
+    z-index: 1000;
+    display: none;
+">
+
+    <div style="padding:10px; border-bottom:1px solid #444; font-weight:bold;">Gemini Chat</div>
+    <div id="chat-messages" style="height:140px; overflow-y:auto; padding:10px; font-size:14px;"></div>
+    <form id="chat-form" style="display:flex; border-top:1px solid #444;">
+        <input id="chat-input" type="text" placeholder="Escribe tu pregunta..." style="flex:1; padding:8px; border:none; background:#333; color:#fff;">
+        <button type="submit" style="padding:8px 16px; border:none; background:#4a90e2; color:#fff;">Enviar</button>
+    </form>
+</div>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script>
+        // --- Datos combinados del JSON enriquecido ---
+        const starsEnriched = [
+    {"name":"Sirius","ra":101.287,"dec":-16.716,"mag":-1.46,"spectral_type":"A1V","distance_ly":8.6,"absolute_magnitude":1.4,"luminosity_Lsun":25,"radius_Rsun":1.7,"temperature_K":9940,"mass_Msun":2.06,"notes":"Binary system; Sirius B is a white dwarf."},
+    {"name":"Canopus","ra":95.988,"dec":-52.696,"mag":-0.72,"spectral_type":"F0II","distance_ly":310,"absolute_magnitude":-5.6,"luminosity_Lsun":10700,"radius_Rsun":71,"temperature_K":7350,"mass_Msun":8.0,"notes":"Bright supergiant in Carina"},
+    {"name":"Arcturus","ra":213.915,"dec":19.182,"mag":-0.04,"spectral_type":"K1.5III","distance_ly":36.7,"absolute_magnitude":-0.3,"luminosity_Lsun":170,"radius_Rsun":25.4,"temperature_K":4286,"mass_Msun":1.1,"notes":"Orange giant in Bootes"},
+    {"name":"Alpha Centauri A","ra":219.902,"dec":-60.834,"mag":-0.01,"spectral_type":"G2V","distance_ly":4.37,"absolute_magnitude":4.38,"luminosity_Lsun":1.52,"radius_Rsun":1.22,"temperature_K":5790,"mass_Msun":1.10,"notes":"Component A of the closest triple system"},
+    {"name":"Vega","ra":279.234,"dec":38.783,"mag":0.03,"spectral_type":"A0V","distance_ly":25.0,"absolute_magnitude":0.58,"luminosity_Lsun":40,"radius_Rsun":2.8,"temperature_K":9602,"mass_Msun":2.1,"notes":"Reference star for photometry"},
+    {"name":"Capella","ra":79.172,"dec":45.998,"mag":0.08,"spectral_type":"G8III","distance_ly":42.9,"absolute_magnitude":-0.5,"luminosity_Lsun":79,"radius_Rsun":12,"temperature_K":4970,"mass_Msun":2.7,"notes":"Binary system of giants"},
+    {"name":"Rigel","ra":78.634,"dec":-8.202,"mag":0.12,"spectral_type":"B8Ia","distance_ly":860,"absolute_magnitude":-7.0,"luminosity_Lsun":120000,"radius_Rsun":78.9,"temperature_K":12100,"mass_Msun":21,"notes":"Blue supergiant in Orion"},
+    {"name":"Procyon","ra":114.825,"dec":5.225,"mag":0.38,"spectral_type":"F5IV-V","distance_ly":11.5,"absolute_magnitude":2.66,"luminosity_Lsun":7.7,"radius_Rsun":2.0,"temperature_K":6530,"mass_Msun":1.5,"notes":"Binary system with white dwarf"},
+    {"name":"Achernar","ra":24.429,"dec":-57.237,"mag":0.46,"spectral_type":"B6Vep","distance_ly":139,"absolute_magnitude":-2.8,"luminosity_Lsun":3150,"radius_Rsun":10.7,"temperature_K":15000,"mass_Msun":6.7,"notes":"Very flattened star due to rapid rotation"},
+    {"name":"Betelgeuse","ra":88.793,"dec":7.407,"mag":0.50,"spectral_type":"M1-2Ia-ab","distance_ly":548,"absolute_magnitude":-5.9,"luminosity_Lsun":126000,"radius_Rsun":887,"temperature_K":3600,"mass_Msun":16.5,"notes":"Variable red supergiant"},
+    {"name":"Hadar","ra":210.956,"dec":-60.373,"mag":0.61,"spectral_type":"B1III","distance_ly":390,"absolute_magnitude":-4.9,"luminosity_Lsun":41500,"radius_Rsun":12.1,"temperature_K":25000,"mass_Msun":12.0,"notes":"Triple system in Centaurus"},
+    {"name":"Altair","ra":297.696,"dec":8.868,"mag":0.77,"spectral_type":"A7V","distance_ly":16.7,"absolute_magnitude":2.22,"luminosity_Lsun":10.6,"radius_Rsun":1.8,"temperature_K":7550,"mass_Msun":1.8,"notes":"Very rapid rotation, flattened shape"},
+    {"name":"Aldebaran","ra":68.980,"dec":16.509,"mag":0.85,"spectral_type":"K5III","distance_ly":65.3,"absolute_magnitude":-0.6,"luminosity_Lsun":518,"radius_Rsun":44.1,"temperature_K":3910,"mass_Msun":1.2,"notes":"Orange giant in Taurus"},
+    {"name":"Spica","ra":201.298,"dec":-11.161,"mag":0.97,"spectral_type":"B1III-IV","distance_ly":250,"absolute_magnitude":-3.4,"luminosity_Lsun":20500,"radius_Rsun":7.8,"temperature_K":22400,"mass_Msun":11.4,"notes":"Eclipsing binary system"},
+    {"name":"Antares","ra":247.352,"dec":-26.432,"mag":1.06,"spectral_type":"M1Ib","distance_ly":550,"absolute_magnitude":-5.3,"luminosity_Lsun":75900,"radius_Rsun":680,"temperature_K":3660,"mass_Msun":12.4,"notes":"Red supergiant in Scorpius"},
+    {"name":"Pollux","ra":116.329,"dec":28.026,"mag":1.14,"spectral_type":"K0III","distance_ly":33.7,"absolute_magnitude":1.0,"luminosity_Lsun":43,"radius_Rsun":8.8,"temperature_K":4666,"mass_Msun":1.9,"notes":"Orange giant with confirmed planet"},
+    {"name":"Fomalhaut","ra":344.413,"dec":-29.622,"mag":1.16,"spectral_type":"A3V","distance_ly":25.1,"absolute_magnitude":1.73,"luminosity_Lsun":16.6,"radius_Rsun":1.8,"temperature_K":8590,"mass_Msun":1.9,"notes":"System with dust disk and planet"},
+    {"name":"Deneb","ra":310.358,"dec":45.280,"mag":1.25,"spectral_type":"A2Ia","distance_ly":2615,"absolute_magnitude":-8.4,"luminosity_Lsun":196000,"radius_Rsun":203,"temperature_K":8525,"mass_Msun":19,"notes":"White supergiant in Cygnus"},
+    {"name":"Regulus","ra":152.093,"dec":11.967,"mag":1.35,"spectral_type":"B7V","distance_ly":79.3,"absolute_magnitude":-0.5,"luminosity_Lsun":316,"radius_Rsun":4.2,"temperature_K":12460,"mass_Msun":3.5,"notes":"Quadruple system, rapid rotation"},
+    {"name":"Castor","ra":113.649,"dec":31.888,"mag":1.57,"spectral_type":"A1V","distance_ly":51.5,"absolute_magnitude":0.6,"luminosity_Lsun":37,"radius_Rsun":2.4,"temperature_K":10300,"mass_Msun":2.8,"notes":"Sextuple system in Gemini"},
+    {"name":"Bellatrix","ra":81.283,"dec":6.350,"mag":1.64,"spectral_type":"B2III","distance_ly":250,"absolute_magnitude":-2.7,"luminosity_Lsun":6400,"radius_Rsun":5.8,"temperature_K":22000,"mass_Msun":8.6,"notes":"Blue giant in Orion"},
+    {"name":"Alnilam","ra":84.053,"dec":-1.202,"mag":1.69,"spectral_type":"B0Ia","distance_ly":2000,"absolute_magnitude":-6.9,"luminosity_Lsun":537000,"radius_Rsun":32.4,"temperature_K":27500,"mass_Msun":40,"notes":"Blue supergiant, center of Orion's Belt"},
+    {"name":"Alnitak","ra":85.190,"dec":-1.943,"mag":1.74,"spectral_type":"O9.7Ib","distance_ly":1260,"absolute_magnitude":-5.9,"luminosity_Lsun":250000,"radius_Rsun":20,"temperature_K":29500,"mass_Msun":33,"notes":"Triple system in Orion's Belt"},
+    {"name":"Dubhe","ra":165.932,"dec":61.751,"mag":1.79,"spectral_type":"K0III","distance_ly":123,"absolute_magnitude":-1.1,"luminosity_Lsun":316,"radius_Rsun":17,"temperature_K":4660,"mass_Msun":4.3,"notes":"Orange giant in Ursa Major"},
+    {"name":"Mirfak","ra":51.081,"dec":49.861,"mag":1.79,"spectral_type":"F5Ib","distance_ly":510,"absolute_magnitude":-4.5,"luminosity_Lsun":5000,"radius_Rsun":68,"temperature_K":6350,"mass_Msun":8.5,"notes":"Yellow supergiant in Perseus"},
+    {"name":"Kaus Australis","ra":276.043,"dec":-34.385,"mag":1.85,"spectral_type":"B9.5III","distance_ly":143,"absolute_magnitude":-1.4,"luminosity_Lsun":1180,"radius_Rsun":6.8,"temperature_K":9200,"mass_Msun":4.5,"notes":"Blue giant in Sagittarius"},
+    {"name":"Alkaid","ra":206.885,"dec":49.313,"mag":1.86,"spectral_type":"B3V","distance_ly":104,"absolute_magnitude":-0.6,"luminosity_Lsun":700,"radius_Rsun":3.4,"temperature_K":17000,"mass_Msun":6.1,"notes":"Blue star in Ursa Major"},
+    {"name":"Avior","ra":125.629,"dec":-59.509,"mag":1.86,"spectral_type":"K3III","distance_ly":630,"absolute_magnitude":-4.6,"luminosity_Lsun":7900,"radius_Rsun":93,"temperature_K":4050,"mass_Msun":9.0,"notes":"Binary system in Carina"},
+    {"name":"Sargas","ra":264.329,"dec":-42.998,"mag":1.87,"spectral_type":"F1II","distance_ly":270,"absolute_magnitude":-2.8,"luminosity_Lsun":2400,"radius_Rsun":26,"temperature_K":7200,"mass_Msun":5.7,"notes":"Bright giant in Scorpius"},
+    {"name":"Menkalinan","ra":89.882,"dec":44.947,"mag":1.90,"spectral_type":"A2V","distance_ly":81.1,"absolute_magnitude":0.6,"luminosity_Lsun":48,"radius_Rsun":2.8,"temperature_K":9000,"mass_Msun":2.4,"notes":"Eclipsing binary system"},
+    {"name":"Atria","ra":253.084,"dec":-69.028,"mag":1.92,"spectral_type":"K2IIb-IIIa","distance_ly":391,"absolute_magnitude":-3.6,"luminosity_Lsun":5500,"radius_Rsun":130,"temperature_K":4250,"mass_Msun":7.0,"notes":"Luminous giant in Triangulum Australe"},
+    {"name":"Alhena","ra":99.428,"dec":16.399,"mag":1.93,"spectral_type":"A0IV","distance_ly":109,"absolute_magnitude":-0.6,"luminosity_Lsun":123,"radius_Rsun":4.8,"temperature_K":9260,"mass_Msun":2.8,"notes":"White subgiant in Gemini"},
+    {"name":"Peacock","ra":306.412,"dec":-56.735,"mag":1.94,"spectral_type":"B2IV","distance_ly":179,"absolute_magnitude":-1.8,"luminosity_Lsun":2200,"radius_Rsun":4.8,"temperature_K":20000,"mass_Msun":6.5,"notes":"Blue subgiant in Pavo"},
+    {"name":"Polaris","ra":37.955,"dec":89.264,"mag":1.98,"spectral_type":"F7Ib","distance_ly":433,"absolute_magnitude":-3.6,"luminosity_Lsun":2200,"radius_Rsun":37.5,"temperature_K":6015,"mass_Msun":5.4,"notes":"Pole Star, classical Cepheid"},
+    {"name":"Mirzam","ra":95.675,"dec":-17.956,"mag":1.98,"spectral_type":"B1II-III","distance_ly":500,"absolute_magnitude":-3.9,"luminosity_Lsun":15500,"radius_Rsun":13.5,"temperature_K":22500,"mass_Msun":13.5,"notes":"Variable blue giant in Canis Major"},
+    {"name":"Alphard","ra":141.897,"dec":-8.659,"mag":1.98,"spectral_type":"K3II-III","distance_ly":177,"absolute_magnitude":-1.7,"luminosity_Lsun":780,"radius_Rsun":50.5,"temperature_K":4120,"mass_Msun":3.0,"notes":"Orange giant in Hydra"},
+    {"name":"Hamal","ra":31.793,"dec":23.462,"mag":2.00,"spectral_type":"K2III","distance_ly":65.9,"absolute_magnitude":0.5,"luminosity_Lsun":91,"radius_Rsun":14.7,"temperature_K":4480,"mass_Msun":1.5,"notes":"Orange giant in Aries"},
+    {"name":"Algieba","ra":154.993,"dec":19.842,"mag":2.08,"spectral_type":"K0III","distance_ly":126,"absolute_magnitude":-0.9,"luminosity_Lsun":320,"radius_Rsun":23,"temperature_K":4470,"mass_Msun":2.5,"notes":"Binary system with confirmed planet"},
+    {"name":"Diphda","ra":10.897,"dec":-17.987,"mag":2.04,"spectral_type":"K0III","distance_ly":96.3,"absolute_magnitude":-0.3,"luminosity_Lsun":145,"radius_Rsun":17.5,"temperature_K":4790,"mass_Msun":1.8,"notes":"Orange giant in Cetus"},
+    {"name":"Mizar","ra":200.981,"dec":54.925,"mag":2.04,"spectral_type":"A2V","distance_ly":82.9,"absolute_magnitude":0.3,"luminosity_Lsun":60,"radius_Rsun":2.4,"temperature_K":9000,"mass_Msun":2.2,"notes":"Famous multiple system, visual double"},
+    {"name":"Nunki","ra":283.816,"dec":-26.297,"mag":2.05,"spectral_type":"B2.5V","distance_ly":228,"absolute_magnitude":-2.4,"luminosity_Lsun":3300,"radius_Rsun":5.5,"temperature_K":20900,"mass_Msun":7.8,"notes":"Blue star in Sagittarius"},
+    {"name":"Alpheratz","ra":2.097,"dec":29.091,"mag":2.06,"spectral_type":"B8IV","distance_ly":97,"absolute_magnitude":-0.3,"luminosity_Lsun":200,"radius_Rsun":3.8,"temperature_K":13800,"mass_Msun":3.6,"notes":"Binary system in Andromeda"},
+    {"name":"Kochab","ra":222.676,"dec":74.156,"mag":2.08,"spectral_type":"K4III","distance_ly":130.9,"absolute_magnitude":-0.9,"luminosity_Lsun":390,"radius_Rsun":42,"temperature_K":4030,"mass_Msun":2.2,"notes":"Orange giant, former pole star"},
+    {"name":"Saiph","ra":86.939,"dec":-9.670,"mag":2.09,"spectral_type":"B0.5Ia","distance_ly":720,"absolute_magnitude":-6.1,"luminosity_Lsun":65600,"radius_Rsun":22.2,"temperature_K":26500,"mass_Msun":15.5,"notes":"Blue supergiant in Orion"},
+    {"name":"Denebola","ra":177.265,"dec":14.572,"mag":2.14,"spectral_type":"A3V","distance_ly":35.9,"absolute_magnitude":1.9,"luminosity_Lsun":15,"radius_Rsun":1.7,"temperature_K":8500,"mass_Msun":1.8,"notes":"White star in Leo"},
+    {"name":"Algol","ra":47.042,"dec":40.956,"mag":2.12,"spectral_type":"B8V","distance_ly":92.8,"absolute_magnitude":-0.1,"luminosity_Lsun":182,"radius_Rsun":3.5,"temperature_K":13000,"mass_Msun":3.6,"notes":"Prototype of eclipsing variables"},
+    {"name":"Schedar","ra":10.127,"dec":56.537,"mag":2.23,"spectral_type":"K0III","distance_ly":228,"absolute_magnitude":-1.9,"luminosity_Lsun":855,"radius_Rsun":42,"temperature_K":4530,"mass_Msun":4.0,"notes":"Orange giant in Cassiopeia"},
+    {"name":"Enif","ra":326.046,"dec":9.875,"mag":2.39,"spectral_type":"K2Ib","distance_ly":670,"absolute_magnitude":-4.2,"luminosity_Lsun":6700,"radius_Rsun":185,"temperature_K":4460,"mass_Msun":8.0,"notes":"Orange supergiant in Pegasus"},
+    {"name":"Mintaka","ra":83.002,"dec":-0.299,"mag":2.23,"spectral_type":"O9.5II","distance_ly":1200,"absolute_magnitude":-5.8,"luminosity_Lsun":90000,"radius_Rsun":20,"temperature_K":29500,"mass_Msun":24,"notes":"Multiple system in Orion's Belt"},
+    {"name":"Caph","ra":2.295,"dec":59.150,"mag":2.27,"spectral_type":"F2III","distance_ly":54.5,"absolute_magnitude":1.3,"luminosity_Lsun":28,"radius_Rsun":3.4,"temperature_K":7100,"mass_Msun":1.9,"notes":"Yellow giant in Cassiopeia"},
+    {"name":"Shaula","ra":263.402,"dec":-37.104,"mag":2.31,"spectral_type":"B1.5IV","distance_ly":570,"absolute_magnitude":-3.7,"luminosity_Lsun":20400,"radius_Rsun":8.8,"temperature_K":23300,"mass_Msun":10.4,"notes":"Triple system in Scorpius"},
+    {"name":"Alioth","ra":193.507,"dec":55.960,"mag":2.37,"spectral_type":"A0p","distance_ly":82.6,"absolute_magnitude":-0.2,"luminosity_Lsun":108,"radius_Rsun":4.2,"temperature_K":9400,"mass_Msun":2.9,"notes":"Ap star with strong magnetic field"},
+    {"name":"Gacrux","ra":187.792,"dec":-57.113,"mag":2.38,"spectral_type":"M4III","distance_ly":88.6,"absolute_magnitude":-0.5,"luminosity_Lsun":1500,"radius_Rsun":84,"temperature_K":3420,"mass_Msun":3.0,"notes":"Red giant in Crux"},
+    {"name":"Eltanin","ra":269.151,"dec":51.489,"mag":2.44,"spectral_type":"K5III","distance_ly":154,"absolute_magnitude":-1.2,"luminosity_Lsun":471,"radius_Rsun":48,"temperature_K":3930,"mass_Msun":1.7,"notes":"Orange giant in Draco"},
+    {"name":"Epsilon Carinae","ra":134.488,"dec":-59.509,"mag":2.47,"spectral_type":"K3III","distance_ly":630,"absolute_magnitude":-4.6,"luminosity_Lsun":7900,"radius_Rsun":93,"temperature_K":4050,"mass_Msun":9.0,"notes":"Orange giant in Carina"},
+    {"name":"Miaplacidus","ra":138.300,"dec":-69.717,"mag":2.50,"spectral_type":"A2IV","distance_ly":111,"absolute_magnitude":-0.9,"luminosity_Lsun":210,"radius_Rsun":5.5,"temperature_K":8800,"mass_Msun":3.5,"notes":"White subgiant in Carina"},
+    {"name":"Rasalhague","ra":263.733,"dec":12.560,"mag":2.53,"spectral_type":"A5III","distance_ly":48.6,"absolute_magnitude":1.3,"luminosity_Lsun":25,"radius_Rsun":2.6,"temperature_K":8000,"mass_Msun":2.4,"notes":"White giant in Ophiuchus"},
+    {"name":"Aspidiske","ra":139.273,"dec":-59.275,"mag":2.55,"spectral_type":"A8Ib","distance_ly":690,"absolute_magnitude":-4.5,"luminosity_Lsun":4900,"radius_Rsun":43,"temperature_K":7400,"mass_Msun":7.3,"notes":"White supergiant in Carina"},
+    {"name":"Ankaa","ra":6.571,"dec":-42.306,"mag":2.56,"spectral_type":"K0.5IIIb","distance_ly":84.6,"absolute_magnitude":0.8,"luminosity_Lsun":62,"radius_Rsun":15,"temperature_K":4630,"mass_Msun":2.5,"notes":"Orange giant in Phoenix"},
+    {"name":"Scheat","ra":345.943,"dec":28.083,"mag":2.58,"spectral_type":"M2II-III","distance_ly":196,"absolute_magnitude":-1.6,"luminosity_Lsun":1500,"radius_Rsun":95,"temperature_K":3700,"mass_Msun":4.5,"notes":"Variable red giant in Pegasus"},
+    {"name":"Delta Velorum","ra":131.176,"dec":-54.709,"mag":2.60,"spectral_type":"A1V","distance_ly":80.6,"absolute_magnitude":0.0,"luminosity_Lsun":105,"radius_Rsun":3.5,"temperature_K":9500,"mass_Msun":2.5,"notes":"Multiple system in Vela"},
+    {"name":"Alphecca","ra":233.671,"dec":26.715,"mag":2.63,"spectral_type":"A0V","distance_ly":75.3,"absolute_magnitude":0.8,"luminosity_Lsun":74,"radius_Rsun":3.1,"temperature_K":9500,"mass_Msun":2.8,"notes":"White star in Corona Borealis"},
+    {"name":"Merak","ra":165.460,"dec":56.382,"mag":2.65,"spectral_type":"A1V","distance_ly":79.7,"absolute_magnitude":0.4,"luminosity_Lsun":70,"radius_Rsun":3.0,"temperature_K":9200,"mass_Msun":2.7,"notes":"White star in Ursa Major"},
+    {"name":"Izar","ra":210.956,"dec":27.074,"mag":2.68,"spectral_type":"K0II","distance_ly":202,"absolute_magnitude":-1.7,"luminosity_Lsun":1200,"radius_Rsun":33,"temperature_K":4500,"mass_Msun":4.5,"notes":"Binary system famous for its contrast"},
+    {"name":"Sabik","ra":239.713,"dec":-15.725,"mag":2.70,"spectral_type":"A2IV","distance_ly":84.2,"absolute_magnitude":0.4,"luminosity_Lsun":66,"radius_Rsun":4.0,"temperature_K":8800,"mass_Msun":2.8,"notes":"Binary system in Ophiuchus"},
+    {"name":"Phecda","ra":178.457,"dec":53.695,"mag":2.72,"spectral_type":"A0V","distance_ly":83.2,"absolute_magnitude":0.6,"luminosity_Lsun":65,"radius_Rsun":3.4,"temperature_K":9500,"mass_Msun":2.9,"notes":"White star in Ursa Major"},
+    {"name":"Aludra","ra":111.024,"dec":-29.303,"mag":2.75,"spectral_type":"B5Ia","distance_ly":2000,"absolute_magnitude":-6.9,"luminosity_Lsun":176000,"radius_Rsun":19.9,"temperature_K":15000,"mass_Msun":19.2,"notes":"Blue supergiant in Canis Major"},
+    {"name":"Markab","ra":346.190,"dec":15.205,"mag":2.77,"spectral_type":"A0IV","distance_ly":139,"absolute_magnitude":-0.7,"luminosity_Lsun":205,"radius_Rsun":4.5,"temperature_K":9800,"mass_Msun":3.4,"notes":"White subgiant in Pegasus"},
+    {"name":"Navi","ra":9.240,"dec":59.150,"mag":2.80,"spectral_type":"B3V","distance_ly":613,"absolute_magnitude":-3.2,"luminosity_Lsun":5800,"radius_Rsun":7.5,"temperature_K":18000,"mass_Msun":8.5,"notes":"Blue star in Cassiopeia"},
+    {"name":"Alderamin","ra":319.644,"dec":62.585,"mag":2.82,"spectral_type":"A7IV","distance_ly":48.8,"absolute_magnitude":1.6,"luminosity_Lsun":19,"radius_Rsun":2.5,"temperature_K":7600,"mass_Msun":1.9,"notes":"White subgiant in Cepheus"},
+    {"name":"Muhlifain","ra":187.466,"dec":-63.099,"mag":2.85,"spectral_type":"B3V","distance_ly":402,"absolute_magnitude":-2.1,"luminosity_Lsun":2300,"radius_Rsun":6.5,"temperature_K":18800,"mass_Msun":7.2,"notes":"Binary system in Centaurus"},
+    {"name":"Theta Scorpii","ra":264.329,"dec":-42.998,"mag":2.87,"spectral_type":"F1III","distance_ly":272,"absolute_magnitude":-1.8,"luminosity_Lsun":960,"radius_Rsun":26,"temperature_K":7200,"mass_Msun":4.0,"notes":"Yellow giant in Scorpius"},
+    {"name":"Arneb","ra":83.183,"dec":-17.822,"mag":2.89,"spectral_type":"F0Ib","distance_ly":2200,"absolute_magnitude":-6.6,"luminosity_Lsun":32000,"radius_Rsun":75,"temperature_K":7000,"mass_Msun":13.0,"notes":"Yellow supergiant in Lepus"},
+    {"name":"Kappa Velorum","ra":140.528,"dec":-55.011,"mag":2.91,"spectral_type":"B2IV","distance_ly":539,"absolute_magnitude":-3.6,"luminosity_Lsun":14000,"radius_Rsun":9.5,"temperature_K":21500,"mass_Msun":9.5,"notes":"Multiple system in Vela"},
+    {"name":"Unukalhai","ra":236.067,"dec":6.426,"mag":2.93,"spectral_type":"K2III","distance_ly":74.2,"absolute_magnitude":0.8,"luminosity_Lsun":70,"radius_Rsun":15,"temperature_K":4500,"mass_Msun":2.2,"notes":"Orange giant in Serpens"},
+    {"name":"Aljanah","ra":305.557,"dec":39.389,"mag":2.95,"spectral_type":"K0III","distance_ly":72.9,"absolute_magnitude":0.7,"luminosity_Lsun":65,"radius_Rsun":12,"temperature_K":4750,"mass_Msun":2.3,"notes":"Orange giant in Cygnus"},
+    {"name":"Thuban","ra":211.097,"dec":64.376,"mag":2.97,"spectral_type":"A0III","distance_ly":303,"absolute_magnitude":-1.8,"luminosity_Lsun":250,"radius_Rsun":3.4,"temperature_K":10000,"mass_Msun":2.8,"notes":"Former pole star in Draco"},
+    {"name":"Suhail","ra":136.999,"dec":-43.196,"mag":2.99,"spectral_type":"K4III","distance_ly":571,"absolute_magnitude":-3.0,"luminosity_Lsun":3600,"radius_Rsun":110,"temperature_K":3950,"mass_Msun":5.0,"notes":"Orange giant in Vela"},
+    {"name":"Eta Ursae Majoris","ra":203.672,"dec":49.313,"mag":3.01,"spectral_type":"B3V","distance_ly":134,"absolute_magnitude":-0.6,"luminosity_Lsun":350,"radius_Rsun":3.8,"temperature_K":17000,"mass_Msun":5.0,"notes":"Blue star in Ursa Major"},
+    {"name":"Algenib","ra":3.309,"dec":15.184,"mag":3.03,"spectral_type":"B2IV","distance_ly":390,"absolute_magnitude":-2.2,"luminosity_Lsun":5800,"radius_Rsun":7.2,"temperature_K":22000,"mass_Msun":8.5,"notes":"Blue subgiant in Perseus"},
+    {"name":"Alcyone","ra":56.871,"dec":24.105,"mag":3.05,"spectral_type":"B7III","distance_ly":440,"absolute_magnitude":-2.4,"luminosity_Lsun":2400,"radius_Rsun":8.2,"temperature_K":12200,"mass_Msun":6.0,"notes":"Brightest star of the Pleiades cluster"},
+    {"name":"Megrez","ra":183.856,"dec":57.032,"mag":3.07,"spectral_type":"A3V","distance_ly":80.5,"absolute_magnitude":1.3,"luminosity_Lsun":24,"radius_Rsun":2.0,"temperature_K":8700,"mass_Msun":2.1,"notes":"White star in Ursa Major"},
+    {"name":"Zubenelgenubi","ra":222.720,"dec":-16.041,"mag":3.09,"spectral_type":"A3IV","distance_ly":77,"absolute_magnitude":0.8,"luminosity_Lsun":40,"radius_Rsun":3.0,"temperature_K":8200,"mass_Msun":2.2,"notes":"Binary system in Libra"},
+    {"name":"Rasalgethi","ra":258.662,"dec":14.390,"mag":3.11,"spectral_type":"M5II","distance_ly":360,"absolute_magnitude":-2.3,"luminosity_Lsun":17000,"radius_Rsun":280,"temperature_K":3400,"mass_Msun":8.0,"notes":"Triple system, variable red supergiant"},
+    {"name":"Etamin","ra":268.382,"dec":51.488,"mag":3.13,"spectral_type":"K5III","distance_ly":154,"absolute_magnitude":-1.2,"luminosity_Lsun":471,"radius_Rsun":48,"temperature_K":3930,"mass_Msun":1.7,"notes":"Orange giant in Draco"},
+    {"name":"Zeta Puppis","ra":120.896,"dec":-40.003,"mag":3.15,"spectral_type":"O4If","distance_ly":1080,"absolute_magnitude":-5.5,"luminosity_Lsun":810000,"radius_Rsun":20,"temperature_K":42000,"mass_Msun":56,"notes":"One of the hottest visible stars"},
+    {"name":"Adhara","ra":104.656,"dec":-28.972,"mag":3.17,"spectral_type":"B2II","distance_ly":430,"absolute_magnitude":-4.1,"luminosity_Lsun":38500,"radius_Rsun":13.5,"temperature_K":22500,"mass_Msun":12.5,"notes":"Blue giant in Canis Major"},
+    {"name":"Menkar","ra":45.570,"dec":4.090,"mag":3.19,"spectral_type":"M1.5III","distance_ly":220,"absolute_magnitude":-1.6,"luminosity_Lsun":2000,"radius_Rsun":89,"temperature_K":3790,"mass_Msun":3.0,"notes":"Red giant in Cetus"},
+    {"name":"Electra","ra":56.219,"dec":24.113,"mag":3.21,"spectral_type":"B6III","distance_ly":400,"absolute_magnitude":-1.6,"luminosity_Lsun":1200,"radius_Rsun":6.0,"temperature_K":14000,"mass_Msun":5.0,"notes":"Member of the Pleiades"},
+    {"name":"Iota Carinae","ra":139.273,"dec":-59.275,"mag":3.23,"spectral_type":"A8Ib","distance_ly":690,"absolute_magnitude":-4.5,"luminosity_Lsun":4900,"radius_Rsun":43,"temperature_K":7400,"mass_Msun":7.3,"notes":"White supergiant in Carina"},
+    {"name":"Ruchbah","ra":20.177,"dec":60.235,"mag":3.25,"spectral_type":"A5V","distance_ly":99,"absolute_magnitude":0.7,"luminosity_Lsun":45,"radius_Rsun":2.8,"temperature_K":8200,"mass_Msun":2.3,"notes":"White star in Cassiopeia"},
+    {"name":"Eta Centauri","ra":210.143,"dec":-42.158,"mag":3.27,"spectral_type":"B1.5V","distance_ly":308,"absolute_magnitude":-2.5,"luminosity_Lsun":5000,"radius_Rsun":6.5,"temperature_K":21000,"mass_Msun":8.5,"notes":"Blue star in Centaurus"},
+    {"name":"Lambda Scorpii","ra":263.402,"dec":-37.295,"mag":3.29,"spectral_type":"B1.5IV","distance_ly":570,"absolute_magnitude":-3.7,"luminosity_Lsun":20400,"radius_Rsun":8.8,"temperature_K":23300,"mass_Msun":10.4,"notes":"Triple system in Scorpius"},
+    {"name":"Acrab","ra":241.359,"dec":-19.805,"mag":3.31,"spectral_type":"B1V","distance_ly":404,"absolute_magnitude":-2.4,"luminosity_Lsun":3300,"radius_Rsun":6.5,"temperature_K":26500,"mass_Msun":10.5,"notes":"Multiple system in Scorpius"},
+    {"name":"Cursa","ra":62.966,"dec":-5.086,"mag":3.33,"spectral_type":"A3III","distance_ly":89,"absolute_magnitude":0.2,"luminosity_Lsun":80,"radius_Rsun":4.0,"temperature_K":8500,"mass_Msun":2.5,"notes":"White giant in Eridanus"},
+    {"name":"Nihal","ra":88.793,"dec":-20.759,"mag":3.35,"spectral_type":"G5III","distance_ly":162,"absolute_magnitude":-0.6,"luminosity_Lsun":165,"radius_Rsun":16,"temperature_K":5100,"mass_Msun":3.0,"notes":"Yellow giant in Lepus"},
+    {"name":"Gamma Leonis","ra":154.993,"dec":19.842,"mag":3.37,"spectral_type":"K0III","distance_ly":126,"absolute_magnitude":-0.9,"luminosity_Lsun":320,"radius_Rsun":23,"temperature_K":4470,"mass_Msun":2.5,"notes":"Binary system with confirmed planet"},
+    {"name":"Turais","ra":133.998,"dec":-59.509,"mag":3.39,"spectral_type":"F0II","distance_ly":1400,"absolute_magnitude":-5.5,"luminosity_Lsun":7500,"radius_Rsun":50,"temperature_K":7200,"mass_Msun":7.0,"notes":"Bright giant in Carina"},
+    {"name":"Sheliak","ra":284.736,"dec":33.363,"mag":3.41,"spectral_type":"B7II","distance_ly":880,"absolute_magnitude":-4.1,"luminosity_Lsun":26000,"radius_Rsun":15.5,"temperature_K":13300,"mass_Msun":8.5,"notes":"Eclipsing binary system in Lyra"},
+    {"name":"Muscida","ra":166.628,"dec":41.499,"mag":3.43,"spectral_type":"G4II-III","distance_ly":179,"absolute_magnitude":-0.7,"luminosity_Lsun":230,"radius_Rsun":18,"temperature_K":5300,"mass_Msun":3.5,"notes":"Yellow giant in Ursa Major"},
+    {"name":"Graffias","ra":240.083,"dec":-19.805,"mag":3.45,"spectral_type":"B1V","distance_ly":404,"absolute_magnitude":-2.4,"luminosity_Lsun":3300,"radius_Rsun":6.5,"temperature_K":26500,"mass_Msun":10.5,"notes":"Multiple system in Scorpius"},
+    {"name":"Mu Ursae Majoris","ra":164.867,"dec":41.499,"mag":3.47,"spectral_type":"M0III","distance_ly":249,"absolute_magnitude":-1.3,"luminosity_Lsun":1100,"radius_Rsun":75,"temperature_K":3800,"mass_Msun":3.0,"notes":"Red giant in Ursa Major"},
+    {"name":"Rho Puppis","ra":121.886,"dec":-24.304,"mag":3.49,"spectral_type":"F6II","distance_ly":63.5,"absolute_magnitude":0.4,"luminosity_Lsun":90,"radius_Rsun":10,"temperature_K":6300,"mass_Msun":3.5,"notes":"Bright giant in Puppis"},
+    {"name":"Pi Scorpii","ra":239.713,"dec":-26.114,"mag":3.51,"spectral_type":"B1V","distance_ly":459,"absolute_magnitude":-2.8,"luminosity_Lsun":7100,"radius_Rsun":7.5,"temperature_K":25500,"mass_Msun":11.0,"notes":"Multiple system in Scorpius"}
+];
+
+
+        // --- Planetas y el Sol ---
+        const planetData = [
+            {
+                name: 'Mercury',
+                radius: 0.8,
+                distance: 15,
+                color: '#8C7853',
+                rotationSpeed: 0.02,
+                orbitSpeed: 0.004,
+                description: 'Closest planet to the Sun. Rocky and heavily cratered.',
+                detailedDescription: 'Rocky planet with an oversized metallic core and a heavily cratered crust. It maintains a 3:2 spin-orbit resonance (three rotations for every two orbits), an ultra-thin exosphere (Na, K, Ca, Mg) produced by sputtering and micrometeoroid impacts, and a weak yet active intrinsic magnetic field. Extreme temperature contrasts occur due to the near absence of an atmosphere, with evidence of global contractions (lobate scarps) caused by the cooling of the interior.'
+            },
+            {
+                name: 'Venus',
+                radius: 1.2,
+                distance: 20,
+                color: '#FFC649',
+                rotationSpeed: -0.01,
+                orbitSpeed: 0.003,
+                description: 'Hottest planet with thick atmosphere and sulfuric acid clouds.',
+                detailedDescription:'Rocky world with a very slow, retrograde rotation; a massive CO₂ atmosphere with traces of N₂ and H₂SO₄ clouds, producing a runaway greenhouse effect (extreme surface temperatures and pressures). The circulation exhibits superrotation (winds circle the planet in just a few days). The surface, mapped by radar, shows extensive volcanic plains and possible recent volcanic activity. It lacks a global dipole magnetic field but has a magnetosphere induced by the solar wind.'
+            },
+            {
+                name: 'Earth',
+                radius: 1.3,
+                distance: 25,
+                color: '#6B93D6',
+                rotationSpeed: 0.015,
+                orbitSpeed: 0.005,
+                description: 'Our home planet with oceans, continents, and life.',
+                hasAtmosphere: true,
+                isEarth: true,
+                detailedDescription: ' Rocky planet with active plate tectonics, the carbonate–silicate cycle, and a core dynamo generating the magnetic field. The hydrosphere and N₂–O₂ atmosphere couple to climate through multiple feedbacks. Ocean–atmosphere exchanges, general circulation, and the biosphere regulate the energy budget and preserve long-term habitability.'
+            },
+            {
+                name: 'Mars',
+                radius: 1.0,
+                distance: 30,
+                color: '#CD5C5C',
+                rotationSpeed: 0.014,
+                orbitSpeed: 0.002,
+                description: 'The Red Planet with polar ice caps and the largest volcano in the solar system.',
+                detailedDescription: ' Cold rocky planet with a thin CO₂ atmosphere, polar caps, and a seasonal CO₂ water cycle. Morphology—including shield volcanoes (Olympus Mons) and canyon systems (Valles Marineris)—points to prolonged volcanism. Crustal magnetization indicates an extinct ancient dynamo. Orbital and in-situ missions document hydrated minerals and paleochannels, key to assessing past habitability and the evolution of atmospheric escape.'
+            },
+            {
+                name: 'Jupiter',
+                radius: 4.0,
+                distance: 40,
+                color: '#D8CA9D',
+                rotationSpeed: 0.03,
+                orbitSpeed: 0.0015,
+                description: 'Largest planet, gas giant with the Great Red Spot and many moons.',
+                hasRings: true,
+                detailedDescription: 'Gas giant (H/He) with zonal bands, large-scale jets, and deep convective systems; the Great Red Spot is a long-lived anticyclonic storm. At high pressure, hydrogen becomes metallic, enabling a powerful dynamo and vast magnetosphere with intense auroras. Jupiter emits more energy than it receives (internal heat flow). Cloud composition includes ammonia and water; gravity data suggest a diluted core.'
+            },
+            {
+                name: 'Saturn',
+                radius: 3.5,
+                distance: 50,
+                color: '#FAD5A5',
+                rotationSpeed: 0.025,
+                orbitSpeed: 0.0012,
+                description: 'Famous for its prominent ring system and low density.',
+                hasRings: true,
+                prominentRings: true,
+                detailedDescription:'Gas giant with rings dominated by water ice and complex dynamics (waves, resonances). Helium rain in the interior likely contributes to energy transport. Atmospheric phenomena include the north-polar hexagon and seasonal storms. Its magnetosphere, fed by Enceladus, interacts with an extensive moon system; Titan exhibits a hydrocarbon meteorological cycle.'
+            },
+            {
+                name: 'Uranus',
+                radius: 2.2,
+                distance: 60,
+                color: '#4FD0E7',
+                rotationSpeed: 0.018,
+                orbitSpeed: 0.0008,
+                description: 'Ice giant that rotates on its side with faint rings.',
+                hasRings: true,
+                detailedDescription: ' Ice giant with ~98° axial tilt, producing extreme seasons and unusual insolation geometry. H/He atmosphere with methane (absorbs red → cyan color), little detectable internal heat flux. The magnetic field is strongly tilted and offset from the center, creating a highly variable magnetosphere. It has faint rings and numerous icy moons.'
+            },
+            {
+                name: 'Neptune',
+                radius: 2.1,
+                distance: 70,
+                color: '#4B70DD',
+                rotationSpeed: 0.016,
+                orbitSpeed: 0.0006,
+                description: 'Windiest planet with the fastest atmospheric winds in the solar system.',
+                detailedDescription: 'The most distant ice giant, with supersonic winds and transient dark storm systems. Shows significant internal heat flux (emits much more than it absorbs). H/He atmosphere with methane (deep blue tone). Triton, the main moon, orbits retrograde and is likely a captured Kuiper Belt object; it has cryogeysers and a geologically young surface, indicating internal activity.'
+            }
+        ];
+
+        // --- Constellations (solo las principales para demo) ---
+        const constellations = [
+            {name: "Aries", lines: [
+                ["Hamal", "Sheratan"],
+                ["Sheratan", "Mesarthim"],
+                ["Mesarthim", "Hamal"]
+            ]},
+            {name: "Taurus", lines: [
+                ["Aldebaran", "Elnath"],
+                ["Elnath", "Alcyone"],
+                ["Alcyone", "Aldebaran"]
+            ]},
+            {name: "Gemini", lines: [
+                ["Pollux", "Castor"],
+                ["Castor", "Alhena"],
+                ["Alhena", "Pollux"]
+            ]},
+            {name: "Cancer", lines: [
+                ["Al Tarf", "Acubens"]
+            ]},
+            {name: "Leo", lines: [
+                ["Regulus", "Algieba"],
+                ["Algieba", "Denebola"],
+                ["Denebola", "Regulus"]
+            ]},
+            {name: "Virgo", lines: [
+                ["Spica", "Vindemiatrix"],
+                ["Vindemiatrix", "Porrima"],
+                ["Porrima", "Spica"]
+            ]},
+            {name: "Libra", lines: [
+                ["Zubeneschamali", "Zubenelgenubi"]
+            ]},
+            {name: "Scorpius", lines: [
+                ["Antares", "Acrab"],
+                ["Acrab", "Sargas"],
+                ["Sargas", "Shaula"]
+            ]},
+            {name: "Sagittarius", lines: [
+                ["Kaus Australis", "Nunki"],
+                ["Nunki", "Ascella"],
+                ["Ascella", "Kaus Australis"]
+            ]},
+            {name: "Capricornus", lines: [
+                ["Deneb Algedi", "Dabih"]
+            ]},
+            {name: "Aquarius", lines: [
+                ["Sadalsuud", "Sadalmelik"]
+            ]},
+            {name: "Pisces", lines: [
+                ["Alpherg", "Alrescha"]
+            ]},
+            {name: "Ursa Major", lines: [
+                ["Dubhe", "Merak"],
+                ["Merak", "Phecda"],
+                ["Phecda", "Megrez"],
+                ["Megrez", "Alioth"],
+                ["Alioth", "Mizar"],
+                ["Mizar", "Alkaid"],
+                ["Alkaid", "Dubhe"]
+            ]},
+            {name: "Ursa Minor", lines: [
+                ["Polaris", "Kochab"],
+                ["Kochab", "Pherkad"],
+                ["Pherkad", "Polaris"]
+            ]},
+            {name: "Draco", lines: [
+                ["Eltanin", "Rastaban"],
+                ["Rastaban", "Thuban"],
+                ["Thuban", "Eltanin"]
+            ]},
+            {name: "Cepheus", lines: [
+                ["Alderamin", "Alfirk"]
+            ]},
+            {name: "Cassiopeia", lines: [
+                ["Schedar", "Caph"],
+                ["Caph", "Navi"],
+                ["Navi", "Ruchbah"],
+                ["Ruchbah", "Segin"],
+                ["Segin", "Schedar"]
+            ]},
+            {name: "Orion", lines: [
+                ["Betelgeuse", "Bellatrix"],
+                ["Bellatrix", "Mintaka"],
+                ["Mintaka", "Alnilam"],
+                ["Alnilam", "Alnitak"],
+                ["Alnitak", "Saiph"],
+                ["Saiph", "Rigel"],
+                ["Rigel", "Betelgeuse"]
+            ]},
+            {name: "Canis Major", lines: [
+                ["Sirius", "Mirzam"],
+                ["Mirzam", "Adhara"],
+                ["Adhara", "Wezen"],
+                ["Wezen", "Aludra"],
+                ["Aludra", "Sirius"]
+            ]},
+            {name: "Canis Minor", lines: [
+                ["Procyon", "Gomeisa"]
+            ]},
+            {name: "Lyra", lines: [
+                ["Vega", "Sheliak"],
+                ["Sheliak", "Sulafat"],
+                ["Sulafat", "Vega"]
+            ]},
+            {name: "Cygnus", lines: [
+                ["Deneb", "Sadr"],
+                ["Sadr", "Gienah"],
+                ["Gienah", "Albireo"],
+                ["Albireo", "Deneb"]
+            ]},
+            {name: "Aquila", lines: [
+                ["Altair", "Alshain"],
+                ["Alshain", "Tarazed"],
+                ["Tarazed", "Altair"]
+            ]},
+            {name: "Pegasus", lines: [
+                ["Markab", "Scheat"],
+                ["Scheat", "Algenib"],
+                ["Algenib", "Alpheratz"],
+                ["Alpheratz", "Markab"]
+            ]},
+            {name: "Andromeda", lines: [
+                ["Alpheratz", "Mirach"],
+                ["Mirach", "Almach"]
+            ]},
+            {name: "Perseus", lines: [
+                ["Mirfak", "Algol"],
+                ["Algol", "Atik"],
+                ["Atik", "Mirfak"]
+            ]},
+            {name: "Cetus", lines: [
+                ["Diphda", "Menkar"],
+                ["Menkar", "Mira"],
+                ["Mira", "Diphda"]
+            ]},
+            {name: "Eridanus", lines: [
+                ["Achernar", "Cursa"],
+                ["Cursa", "Zaurak"],
+                ["Zaurak", "Acamar"],
+                ["Acamar", "Achernar"]
+            ]},
+            {name: "Ophiuchus", lines: [
+                ["Rasalhague", "Sabik"],
+                ["Sabik", "Yed Prior"],
+                ["Yed Prior", "Rasalhague"]
+            ]},
+            {name: "Serpens", lines: [
+                ["Unukalhai", "Alya"]
+            ]},
+            {name: "Corona Borealis", lines: [
+                ["Alphecca", "Nusakan"]
+            ]},
+            {name: "Hercules", lines: [
+                ["Kornephoros", "Rasalgethi"],
+                ["Rasalgethi", "Sarin"],
+                ["Sarin", "Kornephoros"]
+            ]},
+            {name: "Boötes", lines: [
+                ["Arcturus", "Izar"],
+                ["Izar", "Muphrid"],
+                ["Muphrid", "Arcturus"]
+            ]},
+            {name: "Corvus", lines: [
+                ["Gienah", "Algorab"],
+                ["Algorab", "Minkar"],
+                ["Minkar", "Gienah"]
+            ]},
+            {name: "Crater", lines: [
+                ["Alkes", "Labrum"]
+            ]},
+            {name: "Hydra", lines: [
+                ["Alphard", "Minchir"]
+            ]},
+            {name: "Centaurus", lines: [
+                ["Rigil Kentaurus", "Hadar"],
+                ["Hadar", "Muhlifain"],
+                ["Muhlifain", "Rigil Kentaurus"]
+            ]},
+            {name: "Lupus", lines: [
+                ["Alpha Lupi", "Beta Lupi"],
+                ["Beta Lupi", "Gamma Lupi"],
+                ["Gamma Lupi", "Alpha Lupi"]
+            ]},
+            {name: "Ara", lines: [
+                ["Beta Arae", "Alpha Arae"],
+                ["Alpha Arae", "Gamma Arae"],
+                ["Gamma Arae", "Beta Arae"]
+            ]},
+            {name: "Corona Australis", lines: [
+                ["Meridiana", "Alfecca Meridiana"]
+            ]} ];
+
+            // --- Crear un índice combinado de todos los objetos buscables ---
+let allCelestialObjects = [];
+
+// Función para actualizar el índice después de crear el sistema solar
+function updateSearchIndex() {
+    allCelestialObjects = [];
+    
+    // Agregar estrellas
+    starObjects.forEach(star => {
+        allCelestialObjects.push({
+            name: star.name,
+            type: 'star',
+            data: star,
+            searchTerms: [star.name.toLowerCase()]
+        });
+    });
+    
+    // Agregar planetas
+    planets.forEach(planetGroup => {
+        if (planetGroup.userData.name) {
+            allCelestialObjects.push({
+                name: planetGroup.userData.name,
+                type: 'planet',
+                data: planetGroup,
+                searchTerms: [planetGroup.userData.name.toLowerCase()]
+            });
+        }
+    });
+    
+    // Agregar el Sol
+    const sun = solarSystem.children.find(child => child.name === 'Sun');
+    if (sun) {
+        allCelestialObjects.push({
+            name: 'Sun',
+            type: 'sun',
+            data: sun,
+            searchTerms: ['sun', 'sol']
+        });
+    }
+    
+    // Agregar constelaciones
+    constellations.forEach(constellation => {
+        allCelestialObjects.push({
+            name: constellation.name,
+            type: 'constellation',
+            data: constellation,
+            searchTerms: [constellation.name.toLowerCase()]
+        });
+    });
+}
+
+        // --- THREE.js scene setup ---
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 2000);
+        const renderer = new THREE.WebGLRenderer({ antialias: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        document.getElementById('canvas').appendChild(renderer.domElement);
+        
+
+        camera.position.set(50, 30, 80);
+        camera.lookAt(0, 0, 0);
+        let solarSystem, planets;
+
+        // --- Add these variables after camera creation ---
+let cameraFollowTarget = null;
+let cameraFollowDistance = 6;
+
+// --- Replace animateCameraToObject with this version ---
+function animateCameraToObject(target) {
+    // If target is a THREE.Object3D (planet or sun), enable follow mode
+    if (target instanceof THREE.Object3D) {
+        cameraFollowTarget = target;
+        cameraFollowDistance = (target.geometry && target.geometry.parameters && target.geometry.parameters.radius)
+            ? Math.max(4, target.geometry.parameters.radius * 2.5)
+            : 6;
+        // Instantly move camera to the follow position
+        updateCameraFollow();
+        return;
+    }
+    // If target is a Vector3 (star), just move once and disable follow
+    cameraFollowTarget = null;
+    const direction = target.clone().sub(camera.position).normalize();
+    const newPosition = target.clone().add(direction.clone().multiplyScalar(-6));
+    let steps = 60;
+    let step = 0;
+    const startPosition = camera.position.clone();
+    const startQuaternion = camera.quaternion.clone();
+    const endQuaternion = new THREE.Quaternion().setFromRotationMatrix(
+        new THREE.Matrix4().lookAt(newPosition, target, camera.up)
+    );
+    function animateCamera() {
+        step++;
+        camera.position.lerpVectors(startPosition, newPosition, step / steps);
+        THREE.Quaternion.slerp(startQuaternion, endQuaternion, camera.quaternion, step / steps);
+        camera.lookAt(target);
+        if (step < steps) {
+            requestAnimationFrame(animateCamera);
+        }
+    }
+    animateCamera();
+}
+
+// --- Add this function to update camera position if following ---
+function updateCameraFollow() {
+    if (cameraFollowTarget) {
+        const targetPosition = new THREE.Vector3();
+        cameraFollowTarget.getWorldPosition(targetPosition);
+        // Camera direction from target to current camera
+        const camDir = camera.position.clone().sub(targetPosition).normalize();
+        const newPosition = targetPosition.clone().add(camDir.multiplyScalar(cameraFollowDistance));
+        camera.position.lerp(newPosition, 0.2); // Smooth follow
+        camera.lookAt(targetPosition);
+    }
+}
+
+// 🌌 Fondo del universo con una textura real de estrellas
+function createMilkyWayBackground() {
+    const textureLoader = new THREE.TextureLoader();
+    const starTexture = textureLoader.load('textures/stars.jpg'); // tu imagen local
+
+    const geometry = new THREE.SphereGeometry(800, 64, 64);
+    const material = new THREE.MeshBasicMaterial({
+        map: starTexture,
+        side: THREE.BackSide
+    });
+
+    const starsBackground = new THREE.Mesh(geometry, material);
+    scene.add(starsBackground);
+}
+createMilkyWayBackground();
+
+
+        // --- Solar System ---
+        function createSolarSystem() {
+            const solarSystem = new THREE.Group();
+            solarSystem.name = 'SolarSystem';
+            const planets = [];
+            const textureLoader = new THREE.TextureLoader();
+
+planetData.forEach((data, index) => {
+    let textureUrl = null;
+    // Cargar texturas locales desde la carpeta "textures"
+    if (data.name === 'Mercury') textureUrl = 'textures/mercury.jpg';
+    if (data.name === 'Venus')   textureUrl = 'textures/venus.jpg';
+    if (data.name === 'Earth')   textureUrl = 'textures/earth.jpg';
+    if (data.name === 'Mars')    textureUrl = 'textures/mars.jpg';
+    if (data.name === 'Jupiter') textureUrl = 'textures/jupiter.jpg';
+    if (data.name === 'Saturn')  textureUrl = 'textures/saturn.jpg';
+    if (data.name === 'Uranus')  textureUrl = 'textures/uranus.jpg';
+    if (data.name === 'Neptune') textureUrl = 'textures/neptune.jpg';
+
+    const planetGeometry = new THREE.SphereGeometry(data.radius, 64, 64);
+    let planetMaterial;
+    if (textureUrl) {
+    planetMaterial = new THREE.MeshPhongMaterial({
+        map: textureLoader.load(textureUrl),
+        shininess: data.name === 'Earth' ? 20 : 5,
+        emissive: 0x000000
+    });
+} else {
+    planetMaterial = new THREE.MeshPhongMaterial({ 
+        color: data.color,
+        shininess: 5,
+        emissive: 0x000000
+    });
+}
+    const planet = new THREE.Mesh(planetGeometry, planetMaterial);
+    planet.position.set(data.distance, 0, 0);
+    planet.name = data.name;
+    planet.userData = data;
+    const planetGroup = new THREE.Group();
+    planetGroup.add(planet);
+
+                // Add atmosphere for Earth and gas giants
+                if (data.hasAtmosphere || data.name === 'Jupiter' || data.name === 'Saturn' || data.name === 'Uranus' || data.name === 'Neptune') {
+                    const atmosphereGeometry = new THREE.SphereGeometry(data.radius * 1.1, 32, 32);
+                    const atmosphereMaterial = new THREE.MeshBasicMaterial({
+                        color: data.color,
+                        transparent: true,
+                        opacity: data.isEarth ? 0.2 : 0.1,
+                        side: THREE.BackSide
+                    });
+                    const atmosphere = new THREE.Mesh(atmosphereGeometry, atmosphereMaterial);
+                    planet.add(atmosphere); // Attach to planet, not planetGroup
+                }
+
+                // Add rings for ringed planets
+                if (data.hasRings) {
+                    const ringGeometry = new THREE.RingGeometry(data.radius * 1.5, data.radius * 2.5, 64);
+                    const ringMaterial = new THREE.MeshBasicMaterial({
+                        color: data.prominentRings ? 0xcccccc : 0x888888,
+                        transparent: true,
+                        opacity: data.prominentRings ? 0.7 : 0.3,
+                        side: THREE.DoubleSide
+                    });
+                    const rings = new THREE.Mesh(ringGeometry, ringMaterial);
+                    rings.rotation.x = Math.PI / 2;
+                    rings.position.set(0, 0, 0); // Centered on the planet
+                    planet.add(rings); // Attach to the planet mesh, not the group
+                }
+
+                // Create orbit path
+                const orbitGeometry = new THREE.RingGeometry(data.distance - 0.1, data.distance + 0.1, 64);
+                const orbitMaterial = new THREE.MeshBasicMaterial({
+                    color: 0x444444,
+                    transparent: true,
+                    opacity: 0.5,
+                    side: THREE.DoubleSide
+                });
+                const orbit = new THREE.Mesh(orbitGeometry, orbitMaterial);
+                orbit.rotation.x = Math.PI / 2;
+                scene.add(orbit);
+
+                planetGroup.userData = { ...data, angle: Math.random() * Math.PI * 2 };
+                solarSystem.add(planetGroup);
+                planets.push(planetGroup);
+            });
+
+            // 🌞 Crear el Sol con textura local
+            const sunTexture = textureLoader.load('textures/sun.jpg'); // usa el mismo textureLoader ya declarado
+
+            const sunGeometry = new THREE.SphereGeometry(3, 64, 64);
+const sunMaterial = new THREE.MeshBasicMaterial({
+    map: sunTexture,
+    emissive: 0xffaa00,
+    emissiveIntensity: 1.5,
+    color: 0xffffff
+});
+
+            const sun = new THREE.Mesh(sunGeometry, sunMaterial);
+            sun.name = 'Sun';
+            sun.userData = {
+                name: 'Sun',
+                description: 'Our star — a massive ball of hot plasma that provides energy for the solar system.'
+            };
+            solarSystem.add(sun);
+
+            // 🌟 Halo luminoso opcional
+            const sunGlowGeometry = new THREE.SphereGeometry(3.8, 64, 64);
+const sunGlowMaterial = new THREE.MeshBasicMaterial({
+    color: 0xffaa44,
+    transparent: true,
+    opacity: 0.5,
+    side: THREE.BackSide,
+    blending: THREE.AdditiveBlending
+});
+
+// Segundo halo más grande
+const sunGlow2Geometry = new THREE.SphereGeometry(4.5, 32, 32);
+const sunGlow2Material = new THREE.MeshBasicMaterial({
+    color: 0xff8800,
+    transparent: true,
+    opacity: 0.2,
+    side: THREE.BackSide,
+    blending: THREE.AdditiveBlending
+});
+const sunGlow2 = new THREE.Mesh(sunGlow2Geometry, sunGlow2Material);
+sun.add(sunGlow2);
+            const sunGlow = new THREE.Mesh(sunGlowGeometry, sunGlowMaterial);
+            sun.add(sunGlow);
+
+
+
+            scene.add(solarSystem);
+            return { solarSystem, planets };
+        }
+        const result = createSolarSystem();
+        solarSystem = result.solarSystem;
+        planets = result.planets;
+        // Actualizar índice de búsqueda después de crear el sistema solar
+        
+
+        // --- Stars ---
+        function raDecToXYZ(ra, dec, distance = 100) {
+            const raRad = (ra * Math.PI) / 180;
+            const decRad = (dec * Math.PI) / 180;
+            const x = distance * Math.cos(decRad) * Math.cos(raRad);
+            const y = distance * Math.sin(decRad);
+            const z = -distance * Math.cos(decRad) * Math.sin(raRad);
+            return new THREE.Vector3(x, y, z);
+        }
+        function getStarColorFromTemp(temp) {
+    if (temp > 30000) return { r: 0.6, g: 0.7, b: 1.0 }; // Azul
+    if (temp > 10000) return { r: 0.8, g: 0.85, b: 1.0 }; // Blanco azulado
+    if (temp > 7500) return { r: 1.0, g: 1.0, b: 1.0 }; // Blanco
+    if (temp > 6000) return { r: 1.0, g: 1.0, b: 0.8 }; // Blanco amarillento
+    if (temp > 5000) return { r: 1.0, g: 0.9, b: 0.6 }; // Amarillo
+    if (temp > 3500) return { r: 1.0, g: 0.7, b: 0.4 }; // Naranja
+    return { r: 1.0, g: 0.5, b: 0.3 }; // Rojo
+}
+        const starPositions = [];
+        const starColors = [];
+        const starSizes = [];
+        const starObjects = [];
+        starsEnriched.forEach(star => {
+    const pos = raDecToXYZ(star.ra, star.dec);
+    starPositions.push(pos.x, pos.y, pos.z);
+    
+    // Color basado en temperatura real
+    const color = getStarColorFromTemp(star.temperature_K || 5800);
+    const brightness = Math.max(0.5, 1 - (star.mag + 2) / 5);
+    starColors.push(color.r * brightness, color.g * brightness, color.b * brightness);
+    
+    const size = Math.max(2, 8 - star.mag * 1.5);
+    starSizes.push(size);
+    starObjects.push({ ...star, position: pos });
+});
+        
+        const starGeometry = new THREE.BufferGeometry();
+        starGeometry.setAttribute('position', new THREE.Float32BufferAttribute(starPositions, 3));
+        starGeometry.setAttribute('color', new THREE.Float32BufferAttribute(starColors, 3));
+        starGeometry.setAttribute('size', new THREE.Float32BufferAttribute(starSizes, 1));
+        const starMaterial = new THREE.PointsMaterial({
+            size: 3,
+            vertexColors: true,
+            sizeAttenuation: false,
+            transparent: true,
+            opacity: 0.9
+        });
+        const stars = new THREE.Points(starGeometry, starMaterial);
+        scene.add(stars);
+
+        // --- Constellation lines ---
+        function createConstellationLines() {
+            constellations.forEach(constellation => {
+                constellation.lines.forEach(([star1Name, star2Name]) => {
+                    const star1 = starObjects.find(s => s.name === star1Name);
+                    const star2 = starObjects.find(s => s.name === star2Name);
+                    if (star1 && star2) {
+                        const geometry = new THREE.BufferGeometry().setFromPoints([
+                            star1.position,
+                            star2.position
+                        ]);
+                        const material = new THREE.LineBasicMaterial({
+                            color: 0x4488ff,
+                            transparent: true,
+                            opacity: 0.4
+                        });
+                        const line = new THREE.Line(geometry, material);
+                        scene.add(line);
+                    }
+                });
+            });
+        }
+        createConstellationLines();
+        updateSearchIndex();
+
+        // --- Lights ---
+        // Luz del Sol (punto de luz en el centro)
+const sunLight = new THREE.PointLight(0xfff5e6, 2.5, 500);
+sunLight.position.set(0, 0, 0);
+scene.add(sunLight);
+
+// Luz ambiental muy tenue
+const ambientLight = new THREE.AmbientLight(0x111122, 0.05);
+scene.add(ambientLight);
+
+// Luz estelar sutil
+const starLight = new THREE.HemisphereLight(0x0d1b2a, 0x000000, 0.2);
+scene.add(starLight);
+
+// --- Orbit controls ---
+        let isDragging = false;
+        let previousMousePosition = { x: 0, y: 0 };
+        const rotationSpeed = 0.005;
+        renderer.domElement.addEventListener('mousedown', (e) => {
+            isDragging = true;
+            previousMousePosition = { x: e.clientX, y: e.clientY };
+        });
+        renderer.domElement.addEventListener('mousemove', (e) => {
+            if (isDragging) {
+                const deltaX = e.clientX - previousMousePosition.x;
+                const deltaY = e.clientY - previousMousePosition.y;
+                camera.position.applyAxisAngle(new THREE.Vector3(0, 1, 0), -deltaX * rotationSpeed);
+                const right = new THREE.Vector3(1, 0, 0);
+                right.applyQuaternion(camera.quaternion);
+                camera.position.applyAxisAngle(right, -deltaY * rotationSpeed);
+                camera.lookAt(0, 0, 0);
+                previousMousePosition = { x: e.clientX, y: e.clientY };
+            }
+        });
+        renderer.domElement.addEventListener('mouseup', () => {
+            isDragging = false;
+        });
+        renderer.domElement.addEventListener('wheel', (e) => {
+            e.preventDefault();
+            const zoomSpeed = 0.1;
+            const direction = camera.position.clone().normalize();
+            camera.position.add(direction.multiplyScalar(-e.deltaY * zoomSpeed));
+        });
+
+        // --- Raycasting for selection ---
+        const raycaster = new THREE.Raycaster();
+        raycaster.params.Points.threshold = 2;
+        const mouse = new THREE.Vector2();
+
+        let highlightedIndex = null;
+        function highlightStar(index) {
+            if (highlightedIndex !== null) {
+                const color = starColors.slice(highlightedIndex * 3, highlightedIndex * 3 + 3);
+                starGeometry.attributes.color.setXYZ(highlightedIndex, color[0], color[1], color[2]);
+                starGeometry.attributes.size.setX(highlightedIndex, starSizes[highlightedIndex]);
+            }
+            if (index !== null) {
+                starGeometry.attributes.color.setXYZ(index, 1, 0.8, 0.2);
+                starGeometry.attributes.size.setX(index, 16);
+            }
+            highlightedIndex = index;
+            starGeometry.attributes.color.needsUpdate = true;
+            starGeometry.attributes.size.needsUpdate = true;
+        }
+
+        // --- Labels y zoom ---
+let labelActive = false;
+let labelTimeout = null;
+let currentHoveredObject = null;
+let labelFixed = false; // Nueva variable para fijar el label
+const starLabel = document.getElementById('starLabel');
+
+renderer.domElement.addEventListener('mousemove', (e) => {
+    mouse.x = (e.clientX / window.innerWidth) * 2 - 1;
+    mouse.y = -(e.clientY / window.innerHeight) * 2 + 1;
+    raycaster.setFromCamera(mouse, camera);
+    
+    // Verificar si el cursor está sobre el label
+    const labelRect = starLabel.getBoundingClientRect();
+    const buffer = 10;
+    const isOverLabel = starLabel.style.display === 'block' && 
+                        e.clientX >= labelRect.left - buffer && 
+                        e.clientX <= labelRect.right + buffer &&
+                        e.clientY >= labelRect.top - buffer && 
+                        e.clientY <= labelRect.bottom + buffer;
+    
+    // Si está sobre el label, marcarlo como activo y no hacer nada más
+    if (isOverLabel) {
+        labelActive = true;
+        labelFixed = true;
+        if (labelTimeout) clearTimeout(labelTimeout);
+        return;
+    } else {
+        labelActive = false;
+    }
+    
+    let foundObject = null;
+    
+    // Planetas y Sol
+    const planetIntersects = raycaster.intersectObjects(solarSystem.children, true);
+    if (planetIntersects.length > 0) {
+        let clickedObject = planetIntersects[0].object;
+        while (clickedObject && !clickedObject.userData.name && clickedObject.parent) {
+            clickedObject = clickedObject.parent;
+        }
+        if (clickedObject && clickedObject.userData.name) {
+            foundObject = clickedObject;
+            const planetData = clickedObject.userData;
+            
+            // Solo actualizar si cambió el objeto
+            if (currentHoveredObject !== clickedObject) {
+                currentHoveredObject = clickedObject;
+                labelFixed = false; // Permitir nueva posición
+                starLabel.style.left = (e.clientX + 16) + 'px';
+                starLabel.style.top = (e.clientY + 16) + 'px';
+                starLabel.style.display = 'block';
+                starLabel.innerHTML = `
+                    <strong>${planetData.name}</strong><br>
+                    <span>${planetData.description}</span>
+                    <br>
+                    <button id="readMoreBtn" style="margin-top:6px;padding:3px 10px;border-radius:5px;border:none;background:#4488ff;color:#fff;cursor:pointer;font-size:12px;pointer-events:auto;">Leer más</button>
+                `;
+                setTimeout(() => {
+                    const btn = document.getElementById('readMoreBtn');
+                    if (btn) {
+                        btn.onclick = (ev) => {
+                            ev.stopPropagation();
+                            showFullInfo(planetData.name, planetData, true);
+                            starLabel.style.display = 'none';
+                            labelActive = false;
+                            labelFixed = false;
+                            currentHoveredObject = null;
+                        };
+                    }
+                }, 10);
+                labelFixed = true; // Fijar posición después de mostrar
+            }
+            
+            if (labelTimeout) clearTimeout(labelTimeout);
+            return;
+        }
+    }
+    
+    // Estrellas
+    const starIntersects = raycaster.intersectObject(stars);
+    if (starIntersects.length > 0) {
+        const index = starIntersects[0].index;
+        const star = starObjects[index];
+        foundObject = star;
+        
+        // Solo actualizar si cambió la estrella
+        if (currentHoveredObject !== star) {
+            currentHoveredObject = star;
+            labelFixed = false; // Permitir nueva posición
+            starLabel.style.left = (e.clientX + 16) + 'px';
+            starLabel.style.top = (e.clientY + 16) + 'px';
+            starLabel.style.display = 'block';
+            starLabel.innerHTML = `
+                <strong>${star.name}</strong><br>
+                <span>Magnitude: ${star.mag}</span><br>
+                <span>Spectral type: ${star.spectral_type}</span><br>
+                <span>Distance: ${star.distance_ly} light-years</span><br>
+                <span><em>${star.notes.length > 60 ? star.notes.slice(0, 60) + "..." : star.notes}</em></span><br>
+                <button id="readMoreBtn" style="margin-top:6px;padding:3px 10px;border-radius:5px;border:none;background:#4488ff;color:#fff;cursor:pointer;font-size:12px;">Leer más</button>
+            `;
+            setTimeout(() => {
+                const btn = document.getElementById('readMoreBtn');
+                if (btn) {
+                    btn.onclick = (ev) => {
+                        ev.stopPropagation();
+                        showFullInfo(star.name, star, false);
+                        starLabel.style.display = 'none';
+                        labelActive = false;
+                        labelFixed = false;
+                        currentHoveredObject = null;
+                    };
+                }
+            }, 10);
+            labelFixed = true; // Fijar posición después de mostrar
+        }
+        
+        if (labelTimeout) clearTimeout(labelTimeout);
+        return;
+    }
+    
+    // No hay nada bajo el cursor
+    if (!foundObject && !labelFixed) {
+        currentHoveredObject = null;
+        if (labelTimeout) clearTimeout(labelTimeout);
+        labelTimeout = setTimeout(() => {
+            if (!labelActive) {
+                starLabel.style.display = 'none';
+                labelFixed = false;
+            }
+        }, 200);
+    }
+});
+
+starLabel.addEventListener('mouseenter', () => {
+    labelActive = true;
+    labelFixed = true;
+    if (labelTimeout) clearTimeout(labelTimeout);
+});
+
+starLabel.addEventListener('mouseleave', () => {
+    labelActive = false;
+    labelFixed = false;
+    currentHoveredObject = null;
+    starLabel.style.display = 'none';
+});
+        starLabel.addEventListener('mouseenter', () => {
+            labelActive = true;
+            if (labelTimeout) clearTimeout(labelTimeout);
+        });
+        starLabel.addEventListener('mouseleave', () => {
+    labelActive = false;
+    currentHoveredObject = null;
+    starLabel.style.display = 'none';
+});
+
+        function showFullInfo(name, obj, isPlanet) {
+    const fullInfo = document.getElementById('starFullInfo');
+    
+    if (isPlanet) {
+        fullInfo.innerHTML = `
+            <button class="close-btn" onclick="document.getElementById('starFullInfo').classList.remove('show')">✕</button>
+            <div style="font-size:22px;font-weight:bold;margin-bottom:16px;margin-top:40px;text-align:center;color:#88ccff;">${name}</div>
+            
+            <div style="margin-bottom:12px; text-align: justify;">
+                <strong>Descripción:</strong> ${obj.detailedDescription || obj.description || 'No hay información detallada disponible.'}
+            </div>
+
+            
+            ${obj.distance ? `<div style="margin-bottom:12px;"><strong>Distance from the Sun:</strong> ${obj.distance} AU (Astronomical Units)</div>` : ""}
+            
+            ${obj.radius ? `<div style="margin-bottom:12px;"><strong>Radius:</strong> ${obj.radius} Earth radii</div>` : ""}
+            
+            ${obj.rotationSpeed ? `<div style="margin-bottom:12px;"><strong>Rotation speed:</strong> ${Math.abs(obj.rotationSpeed * 1000).toFixed(2)} (relative)</div>` : ""}
+            
+            ${obj.orbitSpeed ? `<div style="margin-bottom:12px;"><strong>Orbital speed:</strong> ${(obj.orbitSpeed * 1000).toFixed(2)} (relative)</div>` : ""}
+            
+            ${obj.hasAtmosphere ? `<div style="margin-bottom:12px;"><strong>Atmosphere:</strong> Sí</div>` : ""} 
+            
+            ${obj.hasRings ? `<div style="margin-bottom:12px;"><strong>Rings:</strong> ${obj.prominentRings ? "Yes (prominent)" : "Yes (faint)"}</div>` : ""}
+            
+            <div style="margin-top:20px;padding-top:16px;border-top:1px solid rgba(68, 136, 255, 0.3);">
+                <strong style="color:#88ccff;">Datos adicionales:</strong>
+                <ul style="margin:10px 0;padding-left:20px;line-height:1.8;">
+                    ${name === 'Earth' ? '<li>Only known planet with life</li><li>71% covered by water</li><li>Atmosphere rich in nitrogen and oxygen</li><li>NASA applies the knowledge and experience gained from decades of planetary and deep space exploration to study Earth. The Earth Science Division operates over 20 satellites in orbit, sponsors hundreds of research programs, and funds opportunities to use data for societal benefit. NASA develops new ways to observe the oceans, land cover, ice, atmosphere, and life, and measures how changes in one area drive changes in others both short and long term. By collaborating with industry leaders, international partners, academic institutions, and other data users, NASA deepens our understanding of the planet, drives innovations, and provides science to inform decisions that benefit both the nation and the world.</li>' : ''}
+${name === 'Jupiter' ? '<li>Largest planet in the solar system</li><li>Has more than 95 known moons</li><li>The Great Red Spot is a giant storm</li><li>On Dec 25, 2023, JWST/NIRCam (3.35 μm) imaged Jupiter’s auroras—hundreds of times brighter than Earth’s—varying within seconds and showing highly variable H₃⁺ emission. The displays are driven by Jupiter’s powerful magnetosphere, fed by solar wind and Io’s volcanic particles. Some bright IR features had no UV counterpart in simultaneous Hubble data, suggesting unexpected low-energy particles. Results were published May 12 in Nature; follow-ups will compare with Juno.</li>' : ''}
+${name === 'Saturn' ? '<li>Its rings are made of ice and rock</li><li>Density lower than water</li><li>Has more than 80 moons</li><li>Four robotic spacecraft have visited Saturn. NASAs Pioneer 11 provided the first close look in September 1979. NASAs twin Voyager 1 and Voyager 2 spacecraft followed up with flybys nine months apart in 1980 and 1981. But it wasnt until Cassini arrived in orbit in 2004 that our understanding of Saturn really started to take shape.</li>' : ''}
+${name === 'Mars' ? '<li>Nicknamed the Red Planet due to its iron oxide</li><li>Olympus Mons: the largest volcano in the solar system</li><li>Possible deposits of frozen water</li><li>NASA has been a leader in Mars exploration through its rovers, which are robotic vehicles designed to explore the Martian surface. The first rover, Sojourner, landed on Mars in 1997, followed by Spirit and Opportunity in 2004. These rovers analyzed soil, rocks, and atmospheric conditions, providing key insights about Mars. In 2012, Curiosity landed in Gale Crater, discovering evidence of past water and the building blocks of life. The most recent, Perseverance, landed in 2021 with a mission to search for signs of ancient life and collect samples for future return missions. NASA’s rovers have significantly advanced our understanding of Mars, bringing us closer to the possibility of human exploration in the future.</li>': ''}
+${name === 'Venus' ? '<li>Rotates in the opposite direction to most planets</li><li>Atmospheric pressure 90 times higher than Earth</li><li>Rain of sulfuric acid</li><li>Magellan, launched in 1989, was NASA’s first deep space probe in 11 years and the first to be deployed by a space shuttle. It mapped 70% of Venus’ surface using radar, revealing volcanic activity, tectonic movement, and lava channels. The probe delivered over 1,200 gigabits of data and greatly improved radar maps of Venus, building on earlier Soviet missions. Its mission ended in 1994 when it descended into Venus atmosphere and disintegrated. Magellan’s findings enhanced our understanding of Venus’ extreme conditions, showing slow erosion and volcanic dominance.</li>' : ''}
+${name === 'Mercury' ? '<li>Closest planet to the Sun</li><li>Temperature extremes: -180°C to 430°C</li><li>One day on Mercury lasts 176 Earth days</li>' : ''}
+${name === 'Uranus' ? '<li>Rotates "on its side" with axis tilted 98°</li><li>Blue-green color due to methane</li><li>Temperatures down to -224°C</li><li>IMAP (launched Sept 24, 2025): Probes the boundary of the heliosphere—the Sun’s protective bubble around our solar system.</li><li> TRACERS (launched Jul 23, 2025): Studies magnetic reconnection near Earth to better understand and prepare for space weather impacts.</li><li> Lucy (Apr 20, 2025 flyby): Captured detailed images of the asteroid Donaldjohanson en route to the distant Trojan asteroids.</li>' : ''}
+${name === 'Neptune' ? '<li>Fastest winds in the solar system (2000 km/h)</li><li>14 known moons</li><li>Intense blue color due to methane</li><li>1989: Voyager 2’s historic flyby (closest and only visit).</li><li>2002–2003: Six small moons identified (Laomedeia, Neso, Sao, Halimede, Psamathe; plus prior ones).</li><li>2011: Neptune completes its first 165-year solar orbit since its 1846 discovery.</li><li>2016: Hubble spots a new dark atmospheric vortex.</li><li>2022: JWST captures the clearest view of Neptune’s rings in 30+ years.</li>' : ''}
+${name === 'Sun' ? '<li>Fastest winds in the solar system (2000 km/h)</li><li>14 known moons</li><li>Intense blue color due to methane</li><li>1989: Voyager 2’s historic flyby (closest and only visit).</li><li>2002–2003: Six small moons identified (Laomedeia, Neso, Sao, Halimede, Psamathe; plus prior ones).</li><li>2011: Neptune completes its first 165-year solar orbit since its 1846 discovery.</li><li>2016: Hubble spots a new dark atmospheric vortex.</li><li>2022: JWST captures the clearest view of Neptune’s rings in 30+ years.</li>' : ''}
+</ul>
+
+            </div>
+        `;
+    } else {
+        fullInfo.innerHTML = `
+            <button class="close-btn" onclick="document.getElementById('starFullInfo').classList.remove('show')">✕</button>
+            <div style="font-size:22px;font-weight:bold;margin-bottom:16px;margin-top:40px;text-align:center;color:#88ccff;">${name}</div>
+            <div style="margin-bottom:12px;"><strong>Magnitud aparente:</strong> ${obj.mag}</div>
+            <div style="margin-bottom:12px;"><strong>Tipo espectral:</strong> ${obj.spectral_type}</div>
+            <div style="margin-bottom:12px;"><strong>Distancia:</strong> ${obj.distance_ly} años luz</div>
+            <div style="margin-bottom:12px;"><strong>Magnitud absoluta:</strong> ${obj.absolute_magnitude}</div>
+            <div style="margin-bottom:12px;"><strong>Luminosidad:</strong> ${obj.luminosity_Lsun} L☉</div>
+            <div style="margin-bottom:12px;"><strong>Radio:</strong> ${obj.radius_Rsun} R☉</div>
+            <div style="margin-bottom:12px;"><strong>Temperatura:</strong> ${obj.temperature_K.toLocaleString()} K</div>
+            <div style="margin-bottom:12px;"><strong>Masa:</strong> ${obj.mass_Msun} M☉</div>
+            <div style="margin-top:16px;padding:12px;background:rgba(68, 136, 255, 0.1);border-radius:8px;border-left:3px solid #4488ff;">
+                <strong>Notas:</strong><br>${obj.notes}
+            </div>
+        `;
+    }
+    
+    // Mostrar el panel con animación
+    fullInfo.classList.add('show');
+    
+    // Agregar efecto hover al botón cerrar
+    const closeBtn = document.getElementById('closeFullInfoBtn');
+    closeBtn.onmouseenter = () => {
+        closeBtn.style.background = '#ff6666';
+        closeBtn.style.transform = 'translateY(-2px)';
+        closeBtn.style.boxShadow = '0 4px 12px rgba(255, 68, 68, 0.4)';
+    };
+    closeBtn.onmouseleave = () => {
+        closeBtn.style.background = '#ff4444';
+        closeBtn.style.transform = 'translateY(0)';
+        closeBtn.style.boxShadow = 'none';
+    };
+    closeBtn.onclick = () => {
+        fullInfo.style.display = 'none';
+    };
+}
+
+        // --- Selección y zoom ---
+        // Cambia animateCameraToObject para hacer el zoom gradual
+        function animateCameraToObject(target) {
+            // If target is a THREE.Object3D (planet or sun), enable follow mode
+    if (target instanceof THREE.Object3D) {
+        cameraFollowTarget = target;
+        cameraFollowDistance = (target.geometry && target.geometry.parameters && target.geometry.parameters.radius)
+            ? Math.max(4, target.geometry.parameters.radius * 2.5)
+            : 6;
+        // Instantly move camera to the follow position
+        updateCameraFollow();
+        return;
+    }
+    // If target is a Vector3 (star), just move once and disable follow
+    cameraFollowTarget = null;
+    const direction = target.clone().sub(camera.position).normalize();
+    const newPosition = target.clone().add(direction.clone().multiplyScalar(-6));
+    let steps = 60;
+    let step = 0;
+    const startPosition = camera.position.clone();
+    const startQuaternion = camera.quaternion.clone();
+    const endQuaternion = new THREE.Quaternion().setFromRotationMatrix(
+        new THREE.Matrix4().lookAt(newPosition, target, camera.up)
+    );
+    function animateCamera() {
+        step++;
+        camera.position.lerpVectors(startPosition, newPosition, step / steps);
+        THREE.Quaternion.slerp(startQuaternion, endQuaternion, camera.quaternion, step / steps);
+        camera.lookAt(target);
+        if (step < steps) {
+            requestAnimationFrame(animateCamera);
+        }
+    }
+    animateCamera();
+}
+
+/**
+ * Realiza un zoom animado y gradual hacia un planeta o el Sol.
+ * 
+ * @param {THREE.Object3D} planetObject - El objeto Three.js del planeta o Sol.
+ * @param {THREE.Camera} camera - La cámara de la escena.
+ * @param {number} [distance=6] - Distancia final desde el centro del planeta.
+ * @param {number} [steps=60] - Cantidad de pasos para la animación (mayor = más suave).
+ */
+function zoomToPlanet(planetObject, camera, distance = 6, steps = 60) {
+    // Obtiene la posición global del planeta
+    const targetPosition = new THREE.Vector3();
+    planetObject.getWorldPosition(targetPosition);
+
+    // Calcula la dirección desde la cámara al planeta
+    const direction = targetPosition.clone().sub(camera.position).normalize();
+
+    // Calcula la nueva posición de la cámara a la distancia deseada del planeta
+    const finalPosition = targetPosition.clone().add(direction.clone().multiplyScalar(-distance));
+
+    // Guarda la posición y orientación inicial de la cámara
+    const startPosition = camera.position.clone();
+    const startQuaternion = camera.quaternion.clone();
+
+    // Calcula la orientación final de la cámara mirando al planeta
+    const endQuaternion = new THREE.Quaternion().setFromRotationMatrix(
+        new THREE.Matrix4().lookAt(finalPosition, targetPosition, camera.up)
+    );
+
+    let step = 0;
+
+    // Función interna para animar el movimiento y la rotación de la cámara
+    function animateCamera() {
+        step++;
+        camera.position.lerpVectors(startPosition, finalPosition, step / steps);
+        THREE.Quaternion.slerp(startQuaternion, endQuaternion, camera.quaternion, step / steps);
+        camera.lookAt(targetPosition);
+        if (step < steps) {
+            requestAnimationFrame(animateCamera);
+        }
+    }
+    animateCamera();
+}
+
+// --- Resize ---
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+
+        // --- Animación ---
+        // Reduce la velocidad de rotación del Sol
+        function animate() {
+            requestAnimationFrame(animate);
+            planets.forEach(planetGroup => {
+                if (planetGroup.userData && planetGroup.userData.name !== 'Sun') {
+                    const data = planetGroup.userData;
+                    // Rotación sobre el eje del planeta
+                    if (planetGroup.children[0]) {
+                        planetGroup.children[0].rotation.y += data.rotationSpeed;
+                    }
+                    // Órbita (rotación del grupo)
+                    if (data.orbitSpeed) {
+                        data.angle += data.orbitSpeed;
+                        planetGroup.rotation.y = data.angle;
+                    }
+                }
+            });
+            updateCameraFollow(); // <-- Add this line
+            renderer.render(scene, camera);
+        }
+        animate();
+
+        // --- Buscar por coordenadas y nombre ---
+        document.getElementById('starCount').textContent = starObjects.length;
+        document.getElementById('searchBtn').addEventListener('click', () => {
+            const ra = parseFloat(document.getElementById('searchRA').value);
+            const dec = parseFloat(document.getElementById('searchDec').value);
+            if (isNaN(ra) || isNaN(dec)) {
+                document.getElementById('starDetails').innerHTML = '<div class="star-info">Ingresa RA y Dec válidos.</div>';
+                return;
+            }
+            let minDist = Infinity;
+            let closestStar = null;
+            starObjects.forEach(star => {
+                const dRA = star.ra - ra;
+                const dDec = star.dec - dec;
+                const dist = Math.sqrt(dRA * dRA + dDec * dDec);
+                if (dist < minDist) {
+                    minDist = dist;
+                    closestStar = star;
+                }
+            });
+            if (closestStar) {
+                document.getElementById('starDetails').innerHTML = `
+                    <div class="star-info">
+                        <strong>${closestStar.name}</strong><br>
+                        Magnitude: ${closestStar.mag.toFixed(2)}<br>
+                        RA: ${closestStar.ra.toFixed(2)}°<br>
+                        Dec: ${closestStar.dec.toFixed(2)}°
+                    </div>
+                `;
+                animateCameraToObject(closestStar.position.clone());
+                const index = starObjects.findIndex(s => s.name === closestStar.name);
+                highlightStar(index);
+            } else {
+                document.getElementById('starDetails').innerHTML = '<div class="star-info">No star found nearby.</div>';
+            }
+        });
+        document.getElementById('searchNameBtn').addEventListener('click', () => {
+    const name = document.getElementById('searchName').value.trim().toLowerCase();
+    if (!name) {
+        document.getElementById('starDetails').innerHTML = '<div class="star-info">Enter a valid name.div>';
+        return;
+    }
+    
+    // Buscar en todos los objetos celestes
+    const found = allCelestialObjects.find(obj => 
+        obj.searchTerms.some(term => term.includes(name) || name.includes(term))
+    );
+    
+    if (!found) {
+        document.getElementById('starDetails').innerHTML = '<div class="star-info">No se encontró ningún objeto celeste con ese nombre.</div>';
+        return;
+    }
+    
+    // Manejar según el tipo de objeto
+    switch(found.type) {
+        case 'star':
+            const star = found.data;
+            document.getElementById('starDetails').innerHTML = `
+                <div class="star-info">
+                    <strong>${star.name}</strong> <br>
+                    Magnitud: ${star.mag.toFixed(2)}<br>
+                    RA: ${star.ra.toFixed(2)}°<br>
+                    Dec: ${star.dec.toFixed(2)}°<br>
+                    Distancia: ${star.distance_ly} años luz
+                </div>
+            `;
+            animateCameraToObject(star.position.clone());
+            const index = starObjects.findIndex(s => s.name === star.name);
+            highlightStar(index);
+            break;
+            
+        case 'planet':
+            const planetGroup = found.data;
+            const planetData = planetGroup.userData;
+            document.getElementById('starDetails').innerHTML = `
+                <div class="star-info">
+                    <strong>${planetData.name}</strong> (Planet)<br>
+                    ${planetData.description}<br>
+                    Distance from the Sun: ${planetData.distance} AU<br>
+                    Radio: ${planetData.radius} radios terrestres
+                </div>
+            `;
+            animateCameraToObject(planetGroup.children[0]);
+            break;
+            
+        case 'sun':
+            const sun = found.data;
+            document.getElementById('starDetails').innerHTML = `
+                <div class="star-info">
+                    <strong>Sol</strong> (Estrella)<br>
+                    ${sun.userData.description}
+                </div>
+            `;
+            animateCameraToObject(sun);
+            break;
+            
+        case 'constellation':
+            const constellation = found.data;
+            // Encontrar la primera estrella de la constelación
+            if (constellation.lines && constellation.lines.length > 0) {
+                const firstStarName = constellation.lines[0][0];
+                const firstStar = starObjects.find(s => s.name === firstStarName);
+                if (firstStar) {
+                    document.getElementById('starDetails').innerHTML = `
+                        <div class="star-info">
+                            <strong>${constellation.name}</strong> (Constelación)<br>
+                            Líneas de conexión: ${constellation.lines.length}<br>
+                            Enfocando primera estrella: ${firstStarName}
+                        </div>
+                    `;
+                    animateCameraToObject(firstStar.position.clone());
+                    const index = starObjects.findIndex(s => s.name === firstStarName);
+                    highlightStar(index);
+                }
+            } else {
+                document.getElementById('starDetails').innerHTML = `
+                    <div class="star-info">
+                        <strong>${constellation.name}</strong> (Constelación)<br>
+                        Constelación encontrada
+                    </div>
+                `;
+            }
+            break;
+    }
+});
+        renderer.domElement.addEventListener('click', (e) => {
+    if (isDragging) return;
+    mouse.x = (e.clientX / window.innerWidth) * 2 - 1;
+    mouse.y = -(e.clientY / window.innerHeight) * 2 + 1;
+    raycaster.setFromCamera(mouse, camera);
+
+    // Ocultar label al hacer clic
+starLabel.style.display = 'none';
+labelFixed = false;
+currentHoveredObject = null;
+
+    // Planetas y Sol
+    const planetIntersects = raycaster.intersectObjects(solarSystem.children, true);
+    if (planetIntersects.length > 0) {
+        let clickedObject = planetIntersects[0].object;
+        // Busca el grupo con userData.name (el planeta)
+        while (clickedObject && !clickedObject.userData.name && clickedObject.parent) {
+            clickedObject = clickedObject.parent;
+        }
+        if (clickedObject && clickedObject.userData.name) {
+            const planetData = clickedObject.userData;
+            document.getElementById('starDetails').innerHTML = `
+                <div class="star-info">
+                    <strong>${planetData.name}</strong><br>
+                    ${planetData.description}<br>
+                    ${planetData.distance ? `Distance from the Sun: ${planetData.distance} AU<br>` : ""}
+                    ${planetData.radius ? `Radius: ${planetData.radius} Earth radii:<br>` : ""}
+                </div>
+            `;
+            animateCameraToObject(clickedObject); // <-- Pass the object, not just position
+            return;
+        }
+    }
+
+    // Estrellas
+    const starIntersects = raycaster.intersectObject(stars);
+    if (starIntersects.length > 0) {
+        const index = starIntersects[0].index;
+        const star = starObjects[index];
+        document.getElementById('starDetails').innerHTML = `
+            <div class="star-info">
+                <strong>${star.name}</strong><br>
+                Magnitude: ${star.mag.toFixed(2)}<br>
+                RA: ${star.ra.toFixed(2)}°<br>
+                Dec: ${star.dec.toFixed(2)}°
+            </div>
+        `;
+        highlightStar(index);
+        animateCameraToObject(star.position.clone()); // <-- Vector3 disables follow
+    }
+});
+
+// Botón Home para hacer zoom out a una vista general
+document.getElementById('homeBtn').onclick = function() {
+    cameraFollowTarget = null;
+    const target = new THREE.Vector3(0, 0, 0); // Centro del sistema
+    const newPosition = new THREE.Vector3(50, 30, 80); // Vista general recomendada
+    let steps = 60;
+    let step = 0;
+    const startPosition = camera.position.clone();
+    const startQuaternion = camera.quaternion.clone();
+    const endQuaternion = new THREE.Quaternion().setFromRotationMatrix(
+        new THREE.Matrix4().lookAt(newPosition, target, camera.up)
+    );
+    function animateCamera() {
+        step++;
+        camera.position.lerpVectors(startPosition, newPosition, step / steps);
+        THREE.Quaternion.slerp(startQuaternion, endQuaternion, camera.quaternion, step / steps);
+        camera.lookAt(target);
+        if (step < steps) {
+            requestAnimationFrame(animateCamera);
+        }
+    }
+    animateCamera();
+};
+
+    // Chatbox Gemini
+    const chatForm = document.getElementById('chat-form');
+    const chatInput = document.getElementById('chat-input');
+    const chatMessages = document.getElementById('chat-messages');
+    const quickQuestions = document.querySelectorAll('.quick-question');
+
+    chatForm.addEventListener('submit', async function(e) {
+        e.preventDefault();
+        const userMsg = chatInput.value.trim();
+        if (!userMsg) return;
+        sendGeminiMessage(userMsg);
+    });
+
+    quickQuestions.forEach(btn => {
+        btn.addEventListener('click', function() {
+            sendGeminiMessage(btn.textContent);
+        });
+    });
+
+    async function sendGeminiMessage(message) {
+        appendMessage('Tú', message);
+        chatInput.value = '';
+        chatInput.disabled = true;
+        try {
+            const res = await fetch('http://localhost:5000/chat', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({message})
+            });
+            const data = await res.json();
+            if (data.reply) {
+                appendMessage('Gemini', data.reply);
+            } else {
+                appendMessage('Gemini', 'Error: ' + (data.error || 'Sin respuesta'));
+            }
+        } catch (err) {
+            appendMessage('Gemini', 'Error de conexión');
+        }
+        chatInput.disabled = false;
+        chatInput.focus();
+    }
+
+    function appendMessage(sender, text) {
+        const msgDiv = document.createElement('div');
+        msgDiv.innerHTML = `<strong>${sender}:</strong> ${text}`;
+        msgDiv.style.marginBottom = '8px';
+        chatMessages.appendChild(msgDiv);
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+    }
+// Toggle para mostrar/ocultar el chatbox
+    const chatToggle = document.getElementById('chatToggle');
+    const chatboxEl = document.getElementById('chatbox');
+    const chatTooltip = document.getElementById('chatTooltip');
+    
+    chatToggle.onclick = () => {
+        if (chatboxEl.style.display === 'none' || chatboxEl.style.display === '') {
+            chatboxEl.style.display = 'block';
+            chatTooltip.style.display = 'none'; // Ocultar tooltip cuando se abre el chat
+        } else {
+            chatboxEl.style.display = 'none';
+            chatTooltip.style.display = 'block'; // Mostrar tooltip cuando se cierra el chat
+        }
+    };
+    
+    // Ocultar tooltip al pasar el mouse sobre el botón
+    chatToggle.onmouseenter = () => {
+        if (chatboxEl.style.display === 'none' || chatboxEl.style.display === '') {
+            chatTooltip.style.opacity = '0.7';
+        }
+    };
+    
+    chatToggle.onmouseleave = () => {
+        if (chatboxEl.style.display === 'none' || chatboxEl.style.display === '') {
+            chatTooltip.style.opacity = '1';
+        }
+    };
+</script>
+</body>
+</html>
